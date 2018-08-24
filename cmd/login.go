@@ -190,8 +190,7 @@ func saveCookie(cookies []*http.Cookie) error {
 			if c == nil {
 				return fmt.Errorf("Session Cookie 不存在")
 			}
-			f, err := os.OpenFile(cookieFile, os.O_WRONLY|os.O_CREATE, 0666)
-			_, err = f.WriteString(c.Name + "=" + c.Value)
+			err := ioutil.WriteFile(cookieFile, []byte(c.Name+"="+c.Value), 0666)
 			if err != nil {
 				return fmt.Errorf("保存 Session Cookie 失败，%v", err)
 			}
