@@ -28,10 +28,8 @@ import (
 )
 
 const (
-	// loginURL       = "/api/v2/account/login"
 	loginURI       = "/api/v2/account/login"
 	minAccountSize = 6
-	cookieFile     = ".cookie"
 )
 
 var account string
@@ -99,7 +97,7 @@ func login(account string, sha1Password string) error {
 	form := url.Values{}
 	form.Set("account", account)
 	form.Set("password", sha1Password)
-	req := request.NewPostRequest(loginURI, &form)
+	req := request.NewPost(loginURI, &form)
 	req.On2fa = get2faCode
 	_, err := req.Send()
 	if err != nil {

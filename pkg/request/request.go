@@ -24,26 +24,22 @@ const (
 
 // Request 包含了 HTTP 请求需要的基本参数
 type Request struct {
-	// URL 请求地址
-	URL string
-	// POST 提交的表单数据
-	Form *url.Values
-	// 请求方法 GET/POST/DELETE 等
-	Method string
-	// On2fa 需要两步验证验证时调用
-	On2fa func() (string, error)
+	URL    string                 // URL 请求地址
+	Form   *url.Values            // POST 提交的表单数据
+	Method string                 // 请求方法 GET/POST/DELETE 等
+	On2fa  func() (string, error) // On2fa 需要两步验证验证时调用
 }
 
-// NewGetRequest 创建 GET 请求
-func NewGetRequest(url string) *Request {
+// NewGet 创建 GET 请求
+func NewGet(url string) *Request {
 	return &Request{
 		URL:    Host + url,
 		Method: http.MethodGet,
 	}
 }
 
-// NewPostRequest 创建 POST 请求
-func NewPostRequest(url string, form *url.Values) *Request {
+// NewPost 创建 POST 请求
+func NewPost(url string, form *url.Values) *Request {
 	return &Request{
 		URL:    Host + url,
 		Method: http.MethodPost,
@@ -51,7 +47,8 @@ func NewPostRequest(url string, form *url.Values) *Request {
 	}
 }
 
-// Send 将发送请求并解析 JSON 结果
+// Send 将发送请求并解析 JSON 结果，返回结果 Result 中如果包含 Code > 0 的情况，将视作意外出错情况
+// 只有当 Result 返回 Code 为 0 时，请求才会被当做成功
 func (r *Request) Send() (*model.Result, error) {
 	u, err := url.Parse(r.URL)
 	if err != nil {
@@ -117,13 +114,13 @@ func (r *Request) Send() (*model.Result, error) {
 		if require2faCode(&result) {
 			return r.send2faCode()
 		}
-		return nil, fmt.Errorf("请求失败, %v", msgs(&result))
+		return nil, fmt.Errorf("请求失败, %v", errorMsg(&result))
 	}
 
 	return &result, nil
 }
 
-func msgs(r *model.Result) string {
+func errorMsg(r *model.Result) string {
 	msg := make([]string, 0)
 	for _, v := range r.Msg {
 		msg = append(msg, v)
@@ -131,7 +128,7 @@ func msgs(r *model.Result) string {
 	return strings.Join(msg, ", ")
 }
 
-// SendAndUnmarshal 将发送请求并反序列化 JSON 中的 Data 结果
+// SendAndUnmarshal 将发送请求并反序列化 JSON 中的 model.Result.Data 结果
 func (r *Request) SendAndUnmarshal(v interface{}) error {
 	result, err := r.Send()
 	if err != nil {
@@ -154,7 +151,7 @@ func (r *Request) send2faCode() (*model.Result, error) {
 	}
 	form := url.Values{}
 	form.Set("code", code)
-	req := NewPostRequest("/api/check_two_factor_auth_code", &form)
+	req := NewPost("/api/check_two_factor_auth_code", &form)
 	result, err := req.Send()
 	if err != nil {
 		return nil, err

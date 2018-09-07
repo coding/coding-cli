@@ -121,7 +121,10 @@ var releaseCmd = &cobra.Command{
 }
 
 // release 主要包含以下五个部分
-// 1. 变更记录（Changelog） 2. 版本对比（Diff） 3.发布服务列表 4.服务配置更新
+// 1. 变更记录（Changelog）
+// 2. 版本对比（Diff）
+// 3. 发布服务列表
+// 4. 服务配置更新
 func release(src string, target string) (err error) {
 	// Ref to Commit ID
 	s := src
@@ -140,17 +143,17 @@ func release(src string, target string) (err error) {
 	}
 	fmt.Printf("compare: %s(%s)...%s(%s)\n\n", s, src, t, target)
 
-	// Changlog
+	// Changelog
 	d, err := diff(s, t)
 	if err != nil {
 		return err
 	}
-	changelogs, err := changelog(d.Commits)
+	changes, err := changelog(d.Commits)
 	if err != nil {
 		return err
 	}
-	size := len(changelogs)
-	for i, c := range changelogs {
+	size := len(changes)
+	for i, c := range changes {
 		fmt.Printf("changelog %d/%d: %s #%d\n", i+1, size, c.Title, c.MergeID)
 	}
 
@@ -276,7 +279,7 @@ func commitID(ref string) (id string, err error) {
 	if ref == "" {
 		return "", fmt.Errorf("ref 不能为空")
 	}
-	req := request.NewGetRequest(fmt.Sprintf(commitDetailURI, ref))
+	req := request.NewGet(fmt.Sprintf(commitDetailURI, ref))
 	commit := model.ComplexCommit{}
 	err = req.SendAndUnmarshal(&commit)
 	if err != nil {
@@ -286,7 +289,7 @@ func commitID(ref string) (id string, err error) {
 }
 
 func diff(src string, target string) (d *model.Diff, err error) {
-	req := request.NewGetRequest(fmt.Sprintf(diffURI, src, target))
+	req := request.NewGet(fmt.Sprintf(diffURI, src, target))
 	b := model.Diff{}
 	err = req.SendAndUnmarshal(&b)
 	if err != nil {
@@ -296,7 +299,7 @@ func diff(src string, target string) (d *model.Diff, err error) {
 }
 
 func defaultBranchCommitID() (branch string, err error) {
-	req := request.NewGetRequest(defaultBranchURI)
+	req := request.NewGet(defaultBranchURI)
 	b := model.Branch{}
 	err = req.SendAndUnmarshal(&b)
 	if err != nil {
@@ -308,13 +311,4 @@ func defaultBranchCommitID() (branch string, err error) {
 
 func init() {
 	rootCmd.AddCommand(releaseCmd)
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// releaseCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// releaseCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
