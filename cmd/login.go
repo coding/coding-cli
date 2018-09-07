@@ -16,53 +16,46 @@ package cmd
 
 import (
 	"crypto/sha1"
-	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"net/http"
-	"net/http/cookiejar"
 	"net/url"
 	"os"
-	"strings"
 	"syscall"
-	"time"
 
-	"e.coding.net/codingcorp/coding-cli/pkg/model"
+	"e.coding.net/codingcorp/coding-cli/pkg/request"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
-	"golang.org/x/net/publicsuffix"
 )
 
 const (
-	// loginURL = "https://codigncorp.coding.net/api/v2/account/login"
-	loginURL       = "http://codingcorp.coding.codingprod.net//api/v2/account/login"
+	// loginURL       = "/api/v2/account/login"
+	loginURI       = "/api/v2/account/login"
 	minAccountSize = 6
 	cookieFile     = ".cookie"
 )
 
-var username string
+var account string
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
 	Use:   "login",
 	Short: "登录到企业版",
-	Long:  `使用 Coding 企业版用户名和密码登录。`,
+	Long:  `使用 Coding 企业版用户名（邮箱或手机号）和密码登录。`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(username) >= 6 {
+		if len(account) >= 3 {
 			password, err := readPassword()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "\n登录失败，%v\n", err)
 				return
 			}
-			err = login(username, sha1Password(password))
+			err = login(account, sha1Password(password))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				return
 			}
 			return
 		}
-		fmt.Fprintf(os.Stderr, "用户名至少 6 位\n")
+		fmt.Fprintf(os.Stderr, "用户名至少 3 位\n")
 	},
 }
 
@@ -91,9 +84,9 @@ func readPassword() (string, error) {
 func init() {
 	rootCmd.AddCommand(loginCmd)
 
-	const userNameFlag = "username"
-	loginCmd.Flags().StringVarP(&username, userNameFlag, "u", "", "用户名")
-	loginCmd.MarkFlagRequired(userNameFlag)
+	const accountFlag = "account"
+	loginCmd.Flags().StringVarP(&account, accountFlag, "u", "", "用户名（邮箱或手机号）")
+	loginCmd.MarkFlagRequired(accountFlag)
 }
 
 func sha1Password(password string) string {
@@ -102,115 +95,29 @@ func sha1Password(password string) string {
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
-func login(username string, sha1Password string) error {
-	u, err := url.Parse(loginURL)
-	if err != nil {
-		return fmt.Errorf("登录请求 URL 错误: %s, %v", loginURL, err)
-	}
-
-	req, err := http.NewRequest(
-		http.MethodPost,
-		loginURL,
-		urlEncodeLoginForm(username, sha1Password),
-	)
-	if err != nil {
-		return fmt.Errorf("创建登录请求失败, 地址: %s, %v", loginURL, err)
-	}
-
-	req = formURLEncoded(req)
-	jar, err := newCookieJar()
+func login(account string, sha1Password string) error {
+	form := url.Values{}
+	form.Set("account", account)
+	form.Set("password", sha1Password)
+	req := request.NewPostRequest(loginURI, &form)
+	req.On2fa = get2faCode
+	_, err := req.Send()
 	if err != nil {
 		return err
 	}
-	cookie, err := readCookie()
-	if err != nil {
-		// 读取失败也不要紧，继续执行
-		fmt.Println(err)
-	} else {
-		jar.SetCookies(u, []*http.Cookie{cookie})
-	}
-	client := &http.Client{
-		Timeout: 10 * time.Second,
-		Jar:     jar,
-	}
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("发送登录请求失败, 地址: %s, %v", loginURL, err)
-	}
-	defer resp.Body.Close()
-
-	err = saveCookie(jar.Cookies(u))
-	if err != nil {
-		// 保存失败也不要紧，继续执行
-		fmt.Println(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("登录失败, 地址: %s, 错误码: %d", loginURL, resp.StatusCode)
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return fmt.Errorf("读取响应内容失败, %v", err)
-	}
-	var result model.Result
-	json.Unmarshal(bodyBytes, &result)
-	if result.Code != 0 {
-		return fmt.Errorf("登录失败 %v", result.Msg)
-	}
-
-	fmt.Printf("登录成功\n")
+	fmt.Println("登录成功")
 	return nil
 }
 
-func formURLEncoded(r *http.Request) *http.Request {
-	r.Header.Add("Content-Type", "application/x-www-form-URLencoded")
-	return r
-}
-
-func newCookieJar() (http.CookieJar, error) {
-	jar, err := cookiejar.New(&cookiejar.Options{PublicSuffixList: publicsuffix.List})
+func get2faCode() (string, error) {
+	fmt.Print("两步验证码: ")
+	b, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
-		return nil, fmt.Errorf("无法创建用户保存 Session 的 Cookie Jar, %v", err)
+		return "", fmt.Errorf("读取两步验证码失败, %v", err)
 	}
-	return jar, nil
-}
-
-func urlEncodeLoginForm(u string, p string) io.Reader {
-	form := url.Values{}
-	form.Set("account", u)
-	form.Set("password", p)
-	return strings.NewReader(form.Encode())
-}
-
-func saveCookie(cookies []*http.Cookie) error {
-	for _, c := range cookies {
-		if c.Name == "sid" || c.Name == "eid" {
-			if c == nil {
-				return fmt.Errorf("Session Cookie 不存在")
-			}
-			err := ioutil.WriteFile(cookieFile, []byte(c.Name+"="+c.Value), 0666)
-			if err != nil {
-				return fmt.Errorf("保存 Session Cookie 失败，%v", err)
-			}
-			return nil
-		}
+	code := string(b)
+	if len(code) == 6 {
+		return code, nil
 	}
-	return nil
-}
-
-func readCookie() (*http.Cookie, error) {
-	b, err := ioutil.ReadFile(cookieFile)
-	if err != nil {
-		return nil, fmt.Errorf("读取 Cookie 文件错误，%v", err)
-	}
-	cookiePair := strings.Split(string(b), "=")
-	if len(cookiePair) != 2 {
-		return nil, fmt.Errorf("Cookie 文件内容格式错误，文件：%s，%v", cookieFile, cookiePair)
-	}
-	return &http.Cookie{
-		Name:  cookiePair[0],
-		Value: cookiePair[1],
-	}, nil
+	return "", fmt.Errorf("读取两步验为 6 位数字")
 }
