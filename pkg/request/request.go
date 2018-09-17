@@ -180,7 +180,7 @@ func saveCookie(cookies []*http.Cookie) error {
 	for _, c := range cookies {
 		if c.Name == "sid" || c.Name == "eid" {
 			if c == nil {
-				return fmt.Errorf("Session Cookie 不存在")
+				return fmt.Errorf("session Cookie 不存在")
 			}
 			err := ioutil.WriteFile(cookieFile, []byte(c.Name+"="+c.Value), 0666)
 			if err != nil {
@@ -200,7 +200,7 @@ func readCookie() (*http.Cookie, error) {
 	str := strings.Replace(string(b), "\n", "", -1)
 	cookiePair := strings.Split(str, "=")
 	if len(cookiePair) != 2 {
-		return nil, fmt.Errorf("Cookie 文件内容格式错误，文件：%s，%v", cookieFile, cookiePair)
+		return nil, fmt.Errorf("cookie 文件内容格式错误，文件：%s，%v", cookieFile, cookiePair)
 	}
 	return &http.Cookie{
 		Name:  cookiePair[0],

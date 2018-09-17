@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"bytes"
 	"testing"
 )
 
@@ -41,6 +42,49 @@ func Test_diffURL(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := diffURL(tt.args.src, tt.args.target); got != tt.want {
 				t.Errorf("diffURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func Test_createRelease_save(t *testing.T) {
+	type fields struct {
+		Changes   []changelog
+		Diff      string
+		Hotfix    bool
+		Principal string
+		Milestone string
+		Services  []string
+		Migration []migration
+		Master    string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		wantO   string
+		wantErr bool
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			release := &createRelease{
+				Changes:   tt.fields.Changes,
+				Diff:      tt.fields.Diff,
+				Hotfix:    tt.fields.Hotfix,
+				Principal: tt.fields.Principal,
+				Milestone: tt.fields.Milestone,
+				Services:  tt.fields.Services,
+				Migration: tt.fields.Migration,
+				Master:    tt.fields.Master,
+			}
+			o := &bytes.Buffer{}
+			if err := release.save(o); (err != nil) != tt.wantErr {
+				t.Errorf("createRelease.save() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotO := o.String(); gotO != tt.wantO {
+				t.Errorf("createRelease.save() = %v, want %v", gotO, tt.wantO)
 			}
 		})
 	}

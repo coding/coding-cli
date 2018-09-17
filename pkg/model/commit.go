@@ -1,17 +1,19 @@
 package model
 
+type Committer struct {
+	Name   string `json:"name"`
+	Email  string `json:"email"`
+	Avatar string `json:"avatar"`
+	Link   string `json:"link"`
+}
+
 type Commit struct {
 	ShortCommit
-	FullMessage string `json:"fullMessage"`
-	AllMessage  string `json:"allMessage"`
-	Committer   struct {
-		Name   string `json:"name"`
-		Email  string `json:"email"`
-		Avatar string `json:"avatar"`
-		Link   string `json:"link"`
-	} `json:"committer"`
-	NotesCount int    `json:"notesCount"`
-	RawMessage string `json:"rawMessage"`
+	FullMessage string    `json:"fullMessage"`
+	AllMessage  string    `json:"allMessage"`
+	Committer   Committer `json:"committer"`
+	NotesCount  int       `json:"notesCount"`
+	RawMessage  string    `json:"rawMessage"`
 }
 
 type ShortCommit struct {

@@ -9,18 +9,20 @@ type Diff struct {
 	DiffStat DiffStat `json:"diffStat"`
 }
 
+type Path struct {
+	ChangeType string `json:"changeType"`
+	Insertions int    `json:"insertions"`
+	Deletions  int    `json:"deletions"`
+	Name       string `json:"name"`
+	Path       string `json:"path"`
+	Size       int    `json:"size"`
+	Mode       int    `json:"mode"`
+	ObjectID   string `json:"objectId"`
+	CommitID   string `json:"commitId"`
+}
+
 type DiffStat struct {
-	Paths []struct {
-		ChangeType string `json:"changeType"`
-		Insertions int    `json:"insertions"`
-		Deletions  int    `json:"deletions"`
-		Name       string `json:"name"`
-		Path       string `json:"path"`
-		Size       int    `json:"size"`
-		Mode       int    `json:"mode"`
-		ObjectID   string `json:"objectId"`
-		CommitID   string `json:"commitId"`
-	} `json:"paths"`
+	Paths      []Path `json:"paths"`
 	CommitID   string `json:"commitId"`
 	OldSha     string `json:"oldSha"`
 	NewSha     string `json:"newSha"`
