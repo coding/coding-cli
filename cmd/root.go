@@ -18,9 +18,14 @@ import (
 	"fmt"
 	"os"
 
+	goflag "flag"
+
+	"github.com/golang/glog"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	flag "github.com/spf13/pflag"
 )
 
 var cfgFile string
@@ -41,13 +46,15 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Println(err)
+		glog.Error(err)
 		os.Exit(1)
 	}
 }
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	// use glog in cobra see https://flowerinthenight.com/blog/2017/12/01/golang-cobra-glog
+	flag.CommandLine.AddGoFlagSet(goflag.CommandLine)
 }
 
 // initConfig reads in config file and ENV variables if set.

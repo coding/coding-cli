@@ -15,6 +15,7 @@
 package cmd
 
 import (
+	"flag"
 	"fmt"
 	"io"
 	"net/url"
@@ -29,6 +30,7 @@ import (
 	"e.coding.net/codingcorp/coding-cli/pkg/model"
 
 	"e.coding.net/codingcorp/coding-cli/pkg/request"
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +40,7 @@ const (
 	diffURI          = "/api/user/codingcorp/project/coding-dev/git/compare_v2?source=%s&target=%s&w=&prefix="
 	mergeURI         = "/api/user/codingcorp/project/coding-dev/git/merge/%d"
 	gitBlobURI       = "/api/user/codingcorp/project/coding-dev/git/blob/%s"
+	referURI         = "/api/user/codingcorp/project/coding-dev/resource_reference/%d"
 	currentUserURI   = "/api/current_user"
 	diffTemplate     = "/p/coding-dev/git/compare/%s...%s"
 )
@@ -110,26 +113,21 @@ var product string
 
 // releaseCmd represents the release command
 var releaseCmd = &cobra.Command{
-	Use:   "release [分支、提交或标签]",
+	Use:   "release 目标分支 或 源分支 目标分支",
 	Short: "创建版本发布",
 	Long: `创建版本发布
 
 为分支、提交或标签（简称 ref）创建版本发布，版本发布分为常规发布和紧急修复两类。`,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		if len(args) == 0 {
-			fmt.Fprintln(os.Stderr, "需提供分支名、提交或标签")
-			return
-		}
-		target := args[0]
-		source, err := defaultBranchCommitID()
+		source, target, err := parseArgs(args)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "无法获取默认分支, %v\n", err)
+			glog.Error("解析目标分支参数异常，%v", err)
 			return
 		}
 		r, err := release(source, target)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "无法创建版本发布, %v\n", err)
+			glog.Error("无法创建版本发布, %v", err)
 			return
 		}
 		// 计算发布版本号
@@ -141,7 +139,7 @@ var releaseCmd = &cobra.Command{
 		// 获取当前用户
 		user, err := currentUser()
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "获取负责人失败, %v\n", err)
+			glog.Error("获取负责人失败, %v", err)
 			return
 		}
 		r.Principal = user.Name
@@ -167,14 +165,33 @@ var releaseCmd = &cobra.Command{
 		err = r.save(f)
 		if err != nil {
 			if shouldSave {
-				fmt.Fprintf(os.Stderr, "文件保存失败, %v\n", err)
+				glog.Error("文件保存失败, %v", err)
 			} else {
-				fmt.Fprintf(os.Stderr, "%v", err)
+				glog.Error("%v", err)
 			}
 		} else if shouldSave {
-			fmt.Printf("版本发布 %s 已保存到 %s\n", r.Release, output)
+			glog.Error("版本发布 %s 已保存到 %s", r.Release, output)
 		}
 	},
+}
+
+func parseArgs(args []string) (source string, target string, err error) {
+	argsSize := len(args)
+	if argsSize == 0 {
+		return "", "", fmt.Errorf("需提供分支名、提交或标签")
+	}
+	if argsSize == 1 {
+		target = args[0]
+		source, err = defaultBranchCommitID()
+		if err != nil {
+			return "", "", fmt.Errorf("无法获取默认分支, %v", err)
+		}
+	}
+	if argsSize == 2 {
+		source = args[0]
+		target = args[1]
+	}
+	return
 }
 
 func contains(s interface{}, elem interface{}) bool {
@@ -190,15 +207,16 @@ func contains(s interface{}, elem interface{}) bool {
 }
 
 type createRelease struct {
-	Changes   []changelog
-	Diff      string
-	Hotfix    bool
-	Principal string
-	Milestone string
-	Services  []string
-	Release   string
-	Migration []migration
-	Master    string
+	Changes    []changelog
+	Diff       string
+	Hotfix     bool
+	Principal  string
+	Milestone  string
+	Services   []string
+	Release    string
+	Migration  []migration
+	Master     string
+	PostMaster string
 }
 
 var funcMap = template.FuncMap{
@@ -210,7 +228,7 @@ var funcMap = template.FuncMap{
 func (release *createRelease) save(o io.Writer) error {
 	outputTpl, err := template.New("output").Funcs(funcMap).Parse(`## ChangeLog
 
-{{range .Changes}}- {{.Title}} #{{.MergeID}}
+{{range .Changes}}- {{.Title}}{{range .TaskIDs}} #{{.}}{{end}} #{{.MergeID}}
 {{end}}
 
 ## Diff
@@ -249,7 +267,7 @@ func (release *createRelease) save(o io.Writer) error {
 ### 发布后 master 指向
 
 ` + "`" + "`" + "`" + `
-{{.Master}}
+{{.PostMaster}}
 ` + "`" + "`" + "`" + `
 `)
 
@@ -289,17 +307,19 @@ func release(src string, target string) (r *createRelease, err error) {
 	if len(src) != 40 {
 		s, err = commitID(src)
 	}
-	r.Master = s
-
 	if err != nil {
 		return nil, err
 	}
+	r.Master = s
 	if len(target) != 40 {
 		t, err = commitID(target)
 	}
 	if err != nil {
 		return nil, err
 	}
+	r.PostMaster = t
+
+	glog.Infof("正在创建基于 %s(%s)...%s(%s) 的版本发布", s, src, t, target)
 
 	// 变更记录
 	d, err := diff(s, t)
@@ -310,6 +330,7 @@ func release(src string, target string) (r *createRelease, err error) {
 	if err != nil {
 		return nil, err
 	}
+	glog.Infof("此版本包含 %d 个主要改动", len(r.Changes))
 
 	// 网页版本对比链接
 	r.Diff, err = compareURL(s, t)
@@ -354,12 +375,7 @@ func file(c model.Commit, n string) (string, error) {
 func migrationScripts(c []changelog) ([]migration, error) {
 	scripts := make([]migration, 0)
 	for _, log := range c {
-		req := request.NewGet(fmt.Sprintf(mergeURI, log.MergeID))
-		merge := model.Merge{}
-		err := req.SendAndUnmarshal(&merge)
-		if err != nil {
-			return nil, fmt.Errorf("获取合并请求失败, mergeID: %d, %v", log.MergeID, err)
-		}
+		merge := log.Merge
 		paths := merge.MergeRequest.DiffStat.Paths
 		for _, path := range paths {
 			if path.Deletions == 0 && path.Insertions > 0 {
@@ -385,7 +401,7 @@ func findServices(names []string) []string {
 	for _, name := range names {
 		index, err := matchPattern(name, patterns)
 		if err != nil {
-			fmt.Println(err)
+			glog.Infof("%v", err)
 			continue
 		}
 		if index > servicesSize-1 {
@@ -415,13 +431,15 @@ func matchPattern(file string, patterns []string) (int, error) {
 			return index, nil
 		}
 	}
-	return -1, fmt.Errorf("无匹配结果, 文件不包含以下前缀\n\t文件：%s\n\t前缀：[%s]", file, strings.Join(patterns, ", "))
+	return -1, fmt.Errorf("无匹配结果, 文件不包含以下前缀\t文件：%s\t前缀：[%s]", file, strings.Join(patterns, ", "))
 }
 
 // changelog 包含 Merge Request 标题、Merge Request 完整信息以及任务完整信息
 type changelog struct {
 	Title   string
 	MergeID int
+	TaskIDs []int
+	Merge   model.Merge
 }
 
 func changelogs(commits []model.Commit) ([]changelog, error) {
@@ -438,9 +456,38 @@ func changelogs(commits []model.Commit) ([]changelog, error) {
 		if mergeID != 0 {
 			c.MergeID = mergeID
 		}
+		req := request.NewGet(fmt.Sprintf(mergeURI, mergeID))
+		merge := model.Merge{}
+		err := req.SendAndUnmarshal(&merge)
+		if err != nil {
+			return nil, fmt.Errorf("获取合并请求失败, mergeID: %d, %v", mergeID, err)
+		}
+		c.Merge = merge
+		glog.Infof("提取到合并请求 #%d - %s", mergeID, merge.MergeRequest.Title)
+		ref, err := refer(mergeID)
+		if err != nil {
+			return nil, err
+		}
+		if ref.Task != nil {
+			taskIDs := make([]int, 0)
+			for _, t := range ref.Task {
+				taskIDs = append(taskIDs, t.Code)
+			}
+			c.TaskIDs = taskIDs
+		}
 		changelogs = append(changelogs, c)
 	}
 	return changelogs, nil
+}
+
+func refer(resourceID int) (*model.Refer, error) {
+	req := request.NewGet(fmt.Sprintf(referURI, resourceID))
+	refer := model.Refer{}
+	err := req.SendAndUnmarshal(&refer)
+	if err != nil {
+		return nil, fmt.Errorf("获取资源引用请求失败, resourceID: %d, %v", resourceID, err)
+	}
+	return &refer, nil
 }
 
 var mergeRequestIDReg = regexp.MustCompile(`merge/(\d+)`)
@@ -519,4 +566,5 @@ func init() {
 	releaseCmd.Flags().StringVarP(&output, "output", "o", "", "保存到文件")
 	releaseCmd.Flags().StringVarP(&rtype, "type", "t", "normal", "发布类型，hotfix - 紧急修复或者 normal - 常规更新")
 	releaseCmd.Flags().StringVarP(&product, "product", "p", "enterprise-saas", "产品线，enterprise-saas 或者 professional")
+	flag.Parse()
 }

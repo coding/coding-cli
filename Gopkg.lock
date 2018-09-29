@@ -9,6 +9,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/golang/glog"
+  packages = ["."]
+  revision = "23def4e6c14b4da8ac2ed8007337bc5eb5007998"
+
+[[projects]]
+  branch = "master"
   name = "github.com/hashicorp/hcl"
   packages = [
     ".",
@@ -147,6 +153,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "719b25ab74aea7d8d804c063c6473e9ce4c67360ac5c9894a789daf0f234b63f"
+  inputs-digest = "a519bf9c91474c0abbedc5bac9fddd1cdb25a173dbed0eab783781235ec2b127"
   solver-name = "gps-cdcl"
   solver-version = 1

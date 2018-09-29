@@ -24,10 +24,11 @@ const (
 
 // Request 包含了 HTTP 请求需要的基本参数
 type Request struct {
-	URL    string                 // URL 请求地址
-	Form   *url.Values            // POST 提交的表单数据
-	Method string                 // 请求方法 GET/POST/DELETE 等
-	On2fa  func() (string, error) // On2fa 需要两步验证验证时调用
+	URL        string                 // URL 请求地址
+	Form       *url.Values            // POST 提交的表单数据
+	Method     string                 // 请求方法 GET/POST/DELETE 等
+	On2fa      func() (string, error) // On2fa 需要两步验证验证时调用
+	CookieFile string                 // CookieFile 指定 Cookie 文件存储位置
 }
 
 // NewGet 创建 GET 请求
@@ -76,7 +77,11 @@ func (r *Request) Send() (*model.Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	cookie, err := readCookie()
+	cf := r.CookieFile
+	if cf == "" {
+		cf = cookieFile
+	}
+	cookie, err := readCookie(cf)
 	if err != nil {
 		// 读取失败也不要紧，继续执行
 		fmt.Println(err)
@@ -94,7 +99,7 @@ func (r *Request) Send() (*model.Result, error) {
 	}
 	defer resp.Body.Close()
 
-	err = saveCookie(jar.Cookies(u))
+	err = saveCookie(jar.Cookies(u), cf)
 	if err != nil {
 		// 保存失败也不要紧，继续执行
 		fmt.Println(err)
@@ -176,7 +181,7 @@ func urlEncodeForm(form *url.Values) io.Reader {
 	return strings.NewReader(form.Encode())
 }
 
-func saveCookie(cookies []*http.Cookie) error {
+func saveCookie(cookies []*http.Cookie, cookieFile string) error {
 	for _, c := range cookies {
 		if c.Name == "sid" || c.Name == "eid" {
 			if c == nil {
@@ -192,7 +197,7 @@ func saveCookie(cookies []*http.Cookie) error {
 	return nil
 }
 
-func readCookie() (*http.Cookie, error) {
+func readCookie(cookieFile string) (*http.Cookie, error) {
 	b, err := ioutil.ReadFile(cookieFile)
 	if err != nil {
 		return nil, fmt.Errorf("读取 Cookie 文件错误，%v", err)
