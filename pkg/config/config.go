@@ -12,7 +12,6 @@ import (
 const defaultConfigFile = ".coding_release.yml"
 
 type Config struct {
-	EID     string `yaml:"eid,omitempty"`
 	Service []struct {
 		Name    string   `yaml:name",omitempty"`
 		Migrate string   `yaml:"migrate,omitempty"`

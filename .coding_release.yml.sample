@@ -1,4 +1,3 @@
-eid: empty
 service:
 - name: e-coding
   migrate:

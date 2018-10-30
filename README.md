@@ -56,7 +56,6 @@ curl https://raw.githubusercontent.com/suuuy/coding-cli/master/install.sh | sh
 ### .coding_release.yml 文件示例
 
 ```yml
-eid: empty
 service:
 - name: e-coding
   migrate: enterprise/app/e-coding/doc/mysql/migrate_script
