@@ -15,17 +15,15 @@
 package cmd
 
 import (
+	goflag "flag"
 	"fmt"
 	"os"
-
-	goflag "flag"
 
 	"github.com/golang/glog"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-
 	flag "github.com/spf13/pflag"
+	"github.com/spf13/viper"
 )
 
 var cfgFile string

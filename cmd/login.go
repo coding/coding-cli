@@ -15,24 +15,23 @@
 package cmd
 
 import (
-	"crypto/sha1"
 	"fmt"
-	"io"
-	"net/url"
 	"os"
 	"syscall"
 
-	"e.coding.net/codingcorp/coding-cli/pkg/request"
+	"e.coding.net/codingcorp/coding-cli/pkg/api"
 	"github.com/spf13/cobra"
 	"golang.org/x/crypto/ssh/terminal"
 )
 
 const (
-	loginURI       = "/api/v2/account/login"
+	accountFlag    = "account"
+	passwordFlag   = "password"
 	minAccountSize = 6
 )
 
 var account string
+var password string
 
 // loginCmd represents the login command
 var loginCmd = &cobra.Command{
@@ -41,16 +40,15 @@ var loginCmd = &cobra.Command{
 	Long:  `使用 Coding 企业版用户名（邮箱或手机号）和密码登录。`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if len(account) >= 3 {
-			password, err := readPassword()
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "\n登录失败，%v\n", err)
-				return
+			if len(password) <= 0 {
+				var err error
+				password, err = readPassword()
+				if err != nil {
+					fmt.Fprintf(os.Stderr, "\n读取密码失败，%v\n", err)
+					return
+				}
 			}
-			err = login(account, sha1Password(password))
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-				return
-			}
+			api.Login(account, password, readTwoFACode)
 			return
 		}
 		fmt.Fprintf(os.Stderr, "用户名至少 3 位\n")
@@ -81,33 +79,12 @@ func readPassword() (string, error) {
 
 func init() {
 	rootCmd.AddCommand(loginCmd)
-
-	const accountFlag = "account"
 	loginCmd.Flags().StringVarP(&account, accountFlag, "u", "", "用户名（邮箱或手机号）")
+	loginCmd.Flags().StringVarP(&password, passwordFlag, "p", "", "密码")
 	loginCmd.MarkFlagRequired(accountFlag)
 }
 
-func sha1Password(password string) string {
-	h := sha1.New()
-	io.WriteString(h, password)
-	return fmt.Sprintf("%x", h.Sum(nil))
-}
-
-func login(account string, sha1Password string) error {
-	form := url.Values{}
-	form.Set("account", account)
-	form.Set("password", sha1Password)
-	req := request.NewPost(loginURI, &form)
-	req.On2fa = get2faCode
-	_, err := req.Send()
-	if err != nil {
-		return err
-	}
-	fmt.Println("登录成功")
-	return nil
-}
-
-func get2faCode() (string, error) {
+func readTwoFACode() (string, error) {
 	fmt.Print("两步验证码: ")
 	b, err := terminal.ReadPassword(int(syscall.Stdin))
 	if err != nil {
