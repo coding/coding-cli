@@ -17,7 +17,7 @@ import (
 	"github.com/parnurzeal/gorequest"
 )
 
-const (
+var (
 	host             = "https://codingcorp.coding.net"
 	cookieFile       = ".coding_release_rc"
 	error2fa         = "two_factor_auth_code_not_empty"
@@ -254,6 +254,17 @@ func CompareURL(sourceHash string, targetHash string) string {
 	s := url.PathEscape(sourceHash)
 	t := url.PathEscape(targetHash)
 	return host + fmt.Sprintf(diffTemplate, s, t)
+}
+
+// SetProject 不同项目名 URL 不同
+func SetProject(projectName string) {
+	referURI = "/api/user/codingcorp/project/" + projectName + "/resource_reference/%d"
+	defaultBranchURI = "/api/user/codingcorp/project/" + projectName + "/git/branches/default"
+	commitDetailURI = "/api/user/codingcorp/project/" + projectName + "/git/commit/%s"
+	diffURI = "/api/user/codingcorp/project/" + projectName + "/git/compare_v2?source=%s&target=%s&w=&prefix="
+	mergeURI = "/api/user/codingcorp/project/" + projectName + "/git/merge/%d"
+	gitBlobURI = "/api/user/codingcorp/project/" + projectName + "/git/blob/%s"
+	diffTemplate = "/p/" + projectName + "/git/compare/%s...%s"
 }
 
 func cookiePath() string {

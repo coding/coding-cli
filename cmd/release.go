@@ -27,6 +27,7 @@ import (
 var output string
 var rtype string
 var product string
+var project string
 var patch int8
 var config string
 
@@ -36,10 +37,14 @@ var releaseCmd = &cobra.Command{
 	Short: "创建版本发布",
 	Long: `创建版本发布
 为分支、提交或标签（简称 ref）创建版本发布，版本发布分为常规发布和紧急修复两类。
-示例命令：coding-cli release master enterprise-saas  -o release-20181030.1-enterprise.md -p enterprise-saas -t normal -n 1 -c ~/.coding_release.yml
+示例命令：coding-cli release master enterprise-saas  -o release-20181030.1-enterprise.md -l enterprise-saas -t normal -n 1 -c ~/.coding_release.yml
 `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
+		if project == "" {
+			project = "coding-dev"
+		}
+		api.SetProject(project)
 		source, target, err := parseArgs(args)
 		if err != nil {
 			glog.Exitln("解析目标分支参数异常，", err)
@@ -77,7 +82,8 @@ func init() {
 	rootCmd.AddCommand(releaseCmd)
 	releaseCmd.Flags().StringVarP(&output, "output", "o", "", "保存到文件")
 	releaseCmd.Flags().StringVarP(&rtype, "type", "t", "normal", "发布类型，hotfix - 紧急修复或者 normal - 常规更新")
-	releaseCmd.Flags().StringVarP(&product, "product", "p", "enterprise-saas", "产品线，enterprise-saas 或者 professional")
+	releaseCmd.Flags().StringVarP(&product, "line", "l", "enterprise-saas", "产品线，enterprise-saas 或者 professional")
+	releaseCmd.Flags().StringVarP(&project, "project", "p", "coding-dev", "项目名称（默认为 coding-dev）")
 	releaseCmd.Flags().Int8VarP(&patch, "patch", "n", 1, "patch 序号")
 	releaseCmd.Flags().StringVarP(&config, "config", "c", "", "配置文件（默认为用户目录下的 .coding_release.yml 文件）")
 	flag.Parse()
