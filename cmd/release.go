@@ -37,7 +37,8 @@ var releaseCmd = &cobra.Command{
 	Short: "创建版本发布",
 	Long: `创建版本发布
 为分支、提交或标签（简称 ref）创建版本发布，版本发布分为常规发布和紧急修复两类。
-示例命令：coding-cli release master enterprise-saas  -o release-20181030.1-enterprise.md -l enterprise-saas -t normal -n 1 -c ~/.coding_release.yml
+示例命令：coding-cli release release-20181122 general-products -p coding-frontend -o release-20181122-general-products.md
+示例命令：coding-cli release master enterprise-saas -o release-20181030.1-enterprise.md -l enterprise-saas -t normal -n 1 -c ~/.coding_release.yml
 `,
 	Args: cobra.MinimumNArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
@@ -83,7 +84,7 @@ func init() {
 	releaseCmd.Flags().StringVarP(&output, "output", "o", "", "保存到文件")
 	releaseCmd.Flags().StringVarP(&rtype, "type", "t", "normal", "发布类型，hotfix - 紧急修复或者 normal - 常规更新")
 	releaseCmd.Flags().StringVarP(&product, "line", "l", "enterprise-saas", "产品线，enterprise-saas 或者 professional")
-	releaseCmd.Flags().StringVarP(&project, "project", "p", "coding-dev", "项目名称（默认为 coding-dev）")
+	releaseCmd.Flags().StringVarP(&project, "project", "p", "coding-dev", "项目名称")
 	releaseCmd.Flags().Int8VarP(&patch, "patch", "n", 1, "patch 序号")
 	releaseCmd.Flags().StringVarP(&config, "config", "c", "", "配置文件（默认为用户目录下的 .coding_release.yml 文件）")
 	flag.Parse()

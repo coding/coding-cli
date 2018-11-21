@@ -10,7 +10,7 @@
 windows 用户请先设置环境变量 $GOBIN
 
 ```bash
-curl https://raw.githubusercontent.com/suuuy/coding-cli/master/install.sh | sh
+curl https://raw.githubusercontent.com/coding/coding-cli/master/install.sh | sh
 ```
 
 或者下载源码编译安装
@@ -27,12 +27,13 @@ curl https://raw.githubusercontent.com/suuuy/coding-cli/master/install.sh | sh
 
 在当前目录生成 Markdown 格式的 Release 文件
 
-示例命令：`coding-cli release master enterprise-saas  -o release-20181030.1-enterprise.md -p enterprise-saas -t normal -n 1 -c ~/.coding_release.yml`
+示例命令：`coding-cli release release-20181122 general-products -p coding-frontend -o release-20181122-general-products.md`
 
-查看帮助：`coding-cli release --h`
+示例命令：`coding-cli release master enterprise-saas  -o release-20181030.1-enterprise.md -l enterprise-saas -t normal -n 1 -c ~/.coding_release.yml`
 
-![图片](https://dn-coding-net-production-pp.codehub.cn/f8f39bb8-a3f9-44ba-b6b4-747e8aa2f8d0.png)
+查看帮助：`coding-cli release -h`
 
+![图片](https://dn-coding-net-production-pp.codehub.cn/e34c95cb-3ca7-4f2e-b081-03efdce7c036.png)
 
 ### 创建环境变量文件
 

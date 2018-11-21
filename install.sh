@@ -13,11 +13,11 @@
 # - CLI_ARCH (optional): use a specific value for ARCH (mostly for testing)
 #
 # You can install using this script:
-# $ curl https://raw.githubusercontent.com/suuuy/coding-cli/master/install.sh | sh
+# $ curl https://raw.githubusercontent.com/coding/coding-cli/master/install.sh | sh
 
 set -e
 
-RELEASES_URL="https://github.com/suuuy/coding-cli/releases"
+RELEASES_URL="https://github.com/coding/coding-cli/releases"
 
 downloadJSON() {
     url="$2"
