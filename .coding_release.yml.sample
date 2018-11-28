@@ -1,0 +1,103 @@
+service:
+- name: e-coding
+  migrate:
+    sql: enterprise/app/e-coding/doc/mysql/migrate_script
+    env-add: enterprise/app/e-coding/doc/mysql/migrate_script
+    env-remove: enterprise/app/e-coding/doc/mysql/migrate_script
+  source:
+  - enterprise/app/e-coding
+  - enterprise/controller/core
+  - enterprise/controller/admin
+  - enterprise/controller/git
+  - enterprise/lib/core
+  - enterprise/lib/statistic
+  - enterprise/lib/search
+  - enterprise/lib/importer
+  - enterprise/lib/admin
+  - enterprise/lib/build-artifact
+- name: e-scheduler
+  source:
+  - enterprise/app/e-coding
+  - enterprise/controller/core
+  - enterprise/controller/admin
+  - enterprise/controller/git
+  - enterprise/lib/core
+  - enterprise/lib/statistic
+  - enterprise/lib/search
+  - enterprise/lib/importer
+  - enterprise/lib/admin
+  - enterprise/lib/build-artifact
+- name: e-front
+  migrate:
+  source:
+  - frontend/coding-front-v2
+- name: e-admin
+  migrate:
+  source:
+  - frontend/coding-front/e-admin
+- name: e-repo-importer
+  migrate:
+  source:
+  - enterprise/lib/importer/src/main/java
+- name: e-nexus-server
+  migrate:
+  source:
+  - app/nexus-server
+- name: e-git-backup
+  migrate:
+  source:
+  - go-git-server/cmd/git-backup
+  - go-git-server/pkg/backup
+- name: e-git-http-server
+  migrate:
+  source:
+  - go-git-server/cmd/git-server/app/git.go
+  - go-git-server/pkg/server/http
+- name: e-git-lfs-server
+  migrate:
+  source:
+  - go-git-server/cmd/git-server/app/lfs.go
+  - go-git-server/pkg/server/lfs
+- name: e-git-rpc-server
+  migrate:
+  source:
+  - go-git-server/cmd/git-server/app/rpc.go
+  - go-git-server/pkg/server/rpc
+- name: e-git-ssh-server
+  migrate:
+  source:
+  - go-git-server/cmd/git-server/app/ssh.go
+  - go-git-server/pkg/server/ssh
+- name: e-git-svn-ssh-server
+  migrate:
+  source:
+  - go-git-server/cmd/git-server/app/svn.go
+  - go-git-server/pkg/server/svn
+- name: e-repo-auth-server
+  migrate:
+  source:
+  - app/repo-auth-server
+- name: e-git-svn-server
+  migrate:
+  source:
+  - app/git-svn-server
+- name: e-git-svn-server
+  migrate:
+  source:
+  - app/repo-manager
+- name: e-webhook-listener
+  migrate:
+  source:
+  - app/webhook-listener
+- name: e-message
+  migrate:
+  source:
+  - app/message
+- name: e-md2html
+  migrate:
+  source:
+  - app/md2html
+- name: e-cci
+  migrate:
+  source:
+  - app/cci

@@ -1,0 +1,7 @@
+.cookie
+vendor
+.idea
+dist
+.history
+.vscode
+.coding_release.yml
