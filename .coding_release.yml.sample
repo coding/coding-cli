@@ -1,9 +1,6 @@
 service:
 - name: e-coding
-  migrate:
-    sql: enterprise/app/e-coding/doc/mysql/migrate_script
-    env-add: enterprise/app/e-coding/doc/mysql/migrate_script
-    env-remove: enterprise/app/e-coding/doc/mysql/migrate_script
+  migrate: enterprise/app/e-coding/doc/mysql/migrate_script
   source:
   - enterprise/app/e-coding
   - enterprise/controller/core
