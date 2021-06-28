@@ -1,0 +1,38 @@
+name: CI
+on:
+  push:
+    branches:
+      - php
+  pull_request:
+    branches:
+      - php
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    container:
+      image: ecoding/php:8.0
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: test
+        run: |
+          composer install
+          XDEBUG_MODE=coverage ./vendor/bin/pest --coverage-clover coverage.xml
+
+      - name: codecov
+        uses: codecov/codecov-action@v1
+
+      - name: GitHub Environment Variables Action
+        uses: FranzDiebold/github-env-vars-action@v2
+
+      - name: build
+        run: php coding app:build --build-version=${CI_SHA_SHORT}
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: coding
+          path: builds/coding
