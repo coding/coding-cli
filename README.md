@@ -1,5 +1,8 @@
 # CODING cli
 
+[![CI](https://github.com/Coding/coding-cli/actions/workflows/ci.yml/badge.svg?branch=php)](https://github.com/Coding/coding-cli/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Coding/coding-cli/branch/php/graph/badge.svg?token=Su2WCy3Yfg)](https://codecov.io/gh/Coding/coding-cli)
+
 CODING cli 基于 [Laravel Zero](https://laravel-zero.com/)。
 
 ## 下载安装

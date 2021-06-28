@@ -1,4 +1,5 @@
 /builds
+/coverage.xml
 /vendor
 /.idea
 /.vscode
