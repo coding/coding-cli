@@ -32,6 +32,8 @@ jobs:
 
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2
+
+      - name: debug
         run: |
           echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME"
 
