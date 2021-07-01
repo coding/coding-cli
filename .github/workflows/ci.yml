@@ -21,7 +21,7 @@ jobs:
           XDEBUG_MODE: coverage
         with:
           args: |
-            composer install
+            composer install && \
             ./vendor/bin/pest --coverage-clover coverage.xml
 
       - name: codecov
