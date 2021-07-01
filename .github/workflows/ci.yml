@@ -17,9 +17,10 @@ jobs:
 
       - name: test
         uses: docker://ecoding/php:8.0
-        run: |
-          composer install
-          XDEBUG_MODE=coverage ./vendor/bin/pest --coverage-clover coverage.xml
+        with:
+          args: |
+            composer install
+            XDEBUG_MODE=coverage ./vendor/bin/pest --coverage-clover coverage.xml
 
       - name: codecov
         uses: codecov/codecov-action@v1
@@ -29,7 +30,8 @@ jobs:
 
       - name: build
         uses: docker://ecoding/php:8.0
-        run: php coding app:build --build-version=${CI_SHA_SHORT}
+        with:
+          args: php coding app:build --build-version=${CI_SHA_SHORT}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
