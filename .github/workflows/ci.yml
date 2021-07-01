@@ -32,6 +32,8 @@ jobs:
 
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2
+        run: |
+          echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME"
 
       - name: build
         uses: docker://ecoding/php:8.0
