@@ -36,11 +36,13 @@ jobs:
       - name: debug
         run: |
           echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME"
+          echo "CI_ACTION_REF_NAME=${CI_ACTION_REF_NAME}"
+          echo "CI_ACTION_REF_NAME=${{ CI_ACTION_REF_NAME }}"
 
       - name: build
         uses: docker://ecoding/php:8.0
         env:
-          CI_SHA_SHORT: "$CI_SHA_SHORT"
+          CI_SHA_SHORT: ${{ CI_SHA_SHORT }}
         with:
           args: php coding app:build --build-version=${{ env.CI_SHA_SHORT }}
 
@@ -63,7 +65,7 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v2
         env:
-          CI_ACTION_REF_NAME: "$CI_ACTION_REF_NAME"
+          CI_ACTION_REF_NAME: ${{ CI_ACTION_REF_NAME }}
         with:
           push: true
           context: .
