@@ -35,8 +35,10 @@ jobs:
 
       - name: build
         uses: docker://ecoding/php:8.0
+        env:
+          CI_SHA_SHORT: ${CI_SHA_SHORT}
         with:
-          args: php coding app:build --build-version=${CI_SHA_SHORT}
+          args: php coding app:build --build-version=${{ env.CI_SHA_SHORT }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -56,10 +58,12 @@ jobs:
       - name: Build and push
         id: docker_build
         uses: docker/build-push-action@v2
+        env:
+          CI_ACTION_REF_NAME: ${CI_ACTION_REF_NAME}
         with:
           push: true
           context: .
-          tags: ecoding/coding-cli:latest,ecoding/coding-cli:${CI_ACTION_REF_NAME}
+          tags: ecoding/coding-cli:latest,ecoding/coding-cli:${{ env.CI_ACTION_REF_NAME }}
 
       - name: Image digest
         if: steps.docker_build.conclusion == 'success'
