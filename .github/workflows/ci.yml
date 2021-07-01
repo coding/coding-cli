@@ -20,9 +20,7 @@ jobs:
         env:
           XDEBUG_MODE: coverage
         with:
-          args: |
-            composer install && \
-            ./vendor/bin/pest --coverage-clover coverage.xml
+          args: composer install && ./vendor/bin/pest --coverage-clover coverage.xml
 
       - name: codecov
         uses: codecov/codecov-action@v1
