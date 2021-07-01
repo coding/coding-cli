@@ -37,8 +37,6 @@ jobs:
         run: |
           echo "CI_SHA_SHORT=$CI_SHA_SHORT" >> $GITHUB_ENV
           echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME" >> $GITHUB_ENV
-          echo "CI_ACTION_REF_NAME=${CI_ACTION_REF_NAME}"
-          echo "CI_ACTION_REF_NAME=${{ CI_ACTION_REF_NAME }}"
 
       - name: build
         uses: docker://ecoding/php:8.0
