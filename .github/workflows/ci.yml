@@ -17,9 +17,9 @@ jobs:
 
       - name: test
         uses: docker://ecoding/php:8.0
+        env:
+          XDEBUG_MODE: coverage
         with:
-          env:
-            XDEBUG_MODE: coverage
           args: |
             composer install
             ./vendor/bin/pest --coverage-clover coverage.xml
