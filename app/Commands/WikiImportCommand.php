@@ -58,7 +58,7 @@ class WikiImportCommand extends Command
         } else {
             $baseUri = config('confluence.base_uri') ?? $this->ask(
                 $provider . ' API 链接：',
-                'http://9.134.190.26:8090/rest/api/'
+                'http://localhost:8090/rest/api/'
             );
         }
         config(['confluence.base_uri' => $baseUri]);
@@ -71,30 +71,27 @@ class WikiImportCommand extends Command
         if ($this->option('confluence_password')) {
             $password = $this->option('confluence_password');
         } else {
-            $password = config('confluence.password') ?? $this->ask($provider . ' 密码：', 'Demo.2021');
+            $password = config('confluence.password') ?? $this->ask($provider . ' 密码：', '123456');
         }
         config(['confluence.auth' => [$username, $password]]);
 
         if ($this->option('coding_token')) {
             $codingToken = $this->option('coding_token');
         } else {
-            $codingToken = config('coding.token') ?? $this->ask(
-                'CODING Token：',
-                '793fe7845effd2596f2da38562336523b58585fb'
-            );
+            $codingToken = config('coding.token') ?? $this->ask('CODING Token：');
         }
 
         if ($this->option('coding_team_domain')) {
             $codingTeamDomain = $this->option('coding_team_domain');
         } else {
-            $codingTeamDomain = config('coding.team_domain') ?? $this->ask('CODING 团队域名：', 'codes-farm');
+            $codingTeamDomain = config('coding.team_domain') ?? $this->ask('CODING 团队域名：');
         }
         $codingTeamDomain = str_replace('.coding.net', '', $codingTeamDomain);
 
         if ($this->option('coding_project_uri')) {
             $codingProjectUri = $this->option('coding_project_uri');
         } else {
-            $codingProjectUri = config('coding.project_uri') ?? $this->ask('CODING 项目标识：', 'laravel-demo');
+            $codingProjectUri = config('coding.project_uri') ?? $this->ask('CODING 项目标识：');
         }
 
         $data = Confluence::resource(Content::class)->index();
