@@ -23,14 +23,14 @@ jobs:
       - name: Lint
         uses: docker://ecoding/php:8.0
         with:
-          args: ./vendor/bin/phpcs --standard=PSR12 src/ tests/
+          args: ./vendor/bin/phpcs --standard=PSR12 app/ tests/
 
       - name: test
         uses: docker://ecoding/php:8.0
         env:
           XDEBUG_MODE: coverage
         with:
-          args: ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-filter src/ tests/
+          args: ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-filter app/ tests/
 
       - name: codecov
         uses: codecov/codecov-action@v1
