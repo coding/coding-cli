@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - php
+    tags:
+      - 2.*.*
   pull_request:
     branches:
       - php
