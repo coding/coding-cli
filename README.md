@@ -12,7 +12,7 @@ CODING cli 基于 [Laravel Zero](https://laravel-zero.com/)。
 docker run -t ecoding/coding-cli
 ```
 
-![docker run coding cli](https://user-images.githubusercontent.com/4971414/124108766-072a5b80-da99-11eb-9afa-8a9143e1f404.png)
+![docker run coding cli](https://user-images.githubusercontent.com/4971414/124300830-8e5afa80-db91-11eb-8032-fc6e7f7f063d.png)
 
 ## 非 Docker 方式运行
 
