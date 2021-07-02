@@ -20,6 +20,11 @@ jobs:
         with:
           args: composer install
 
+      - name: Lint
+        uses: docker://ecoding/php:8.0
+        with:
+          args: ./vendor/bin/phpcs --standard=PSR12 src/ tests/
+
       - name: test
         uses: docker://ecoding/php:8.0
         env:
