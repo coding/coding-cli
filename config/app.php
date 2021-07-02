@@ -55,6 +55,7 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
+        \LaravelFans\Confluence\ConfluenceServiceProvider::class,
     ],
 
 ];

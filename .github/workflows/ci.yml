@@ -25,7 +25,7 @@ jobs:
         env:
           XDEBUG_MODE: coverage
         with:
-          args: ./vendor/bin/pest --coverage-clover coverage.xml
+          args: ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-filter src/ tests/
 
       - name: codecov
         uses: codecov/codecov-action@v1
