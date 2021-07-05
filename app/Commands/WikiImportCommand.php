@@ -36,14 +36,16 @@ class WikiImportCommand extends Command
     private string $codingProjectUri;
     private string $codingTeamDomain;
     private string $codingToken;
+    private \DOMDocument $document;
 
     /**
      * Execute the console command.
      *
      */
-    public function handle(Coding $coding): int
+    public function handle(Coding $coding, \DOMDocument $document): int
     {
         $this->coding = $coding;
+        $this->document = $document;
         $this->setCodingApi();
 
         if ($this->option('coding_import_provider')) {
@@ -126,8 +128,32 @@ class WikiImportCommand extends Command
     private function handleConfluenceHtml(): int
     {
         $dataPath = config('coding.import.data_path') ?? $this->ask('路径：');
+        $filePath = str_ends_with($dataPath, '/index.html') ? $dataPath : rtrim($dataPath, " /") . '/index.html';
+        if (!file_exists($filePath)) {
+            $this->error("文件不存在：$filePath");
+            return 1;
+        }
+        try {
+            libxml_use_internal_errors(true);
+            $this->document->loadHTMLFile($filePath);
+            $mainContent = $this->document->getElementById('main-content');
+            $trList = $mainContent->getElementsByTagName('tr');
+            $space = [];
+            foreach ($trList as $tr) {
+                if ($tr->getElementsByTagName('th')[0]->nodeValue == 'Key') {
+                    $space['key'] = $tr->getElementsByTagName('td')[0]->nodeValue;
+                } elseif ($tr->getElementsByTagName('th')[0]->nodeValue == 'Name') {
+                    $space['name'] = $tr->getElementsByTagName('td')[0]->nodeValue;
+                }
+            }
+            $this->info('空间名称：' . $space['name']);
+            $this->info('空间标识：' . $space['key']);
+            // TODO Available Pages
+        } catch (\ErrorException $e) {
+            $this->error($e->getMessage());
+            return 1;
+        }
 
-        // TODO
         return 0;
     }
 
