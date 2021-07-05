@@ -23,13 +23,14 @@ class WikiImportCommandTest extends TestCase
         });
         Confluence::setResource($mock);
         $this->artisan('wiki:import')
+            ->expectsQuestion('CODING 团队域名：', $this->faker->domainWord)
+            ->expectsQuestion('CODING 项目标识：', $this->faker->slug)
+            ->expectsQuestion('CODING Token：', $this->faker->md5)
             ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'API')
             ->expectsQuestion('Confluence API 链接：', $this->faker->url)
             ->expectsQuestion('Confluence 账号：', $this->faker->userName)
             ->expectsQuestion('Confluence 密码：', $this->faker->password)
-            ->expectsQuestion('CODING Token：', $this->faker->md5)
-            ->expectsQuestion('CODING 团队域名：', $this->faker->domainWord)
-            ->expectsQuestion('CODING 项目标识：', $this->faker->slug)
             ->expectsOutput("已获得 0 条数据")
             ->assertExitCode(0);
     }
@@ -152,6 +153,7 @@ class WikiImportCommandTest extends TestCase
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'API')
             ->expectsOutput("已获得 1 条数据")
             ->expectsOutput("开始导入 CODING：")
             ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")

@@ -32,13 +32,20 @@ class WikiImportCommand extends Command
      */
     protected $description = 'import wiki from confluence and so on';
 
+    private Coding $coding;
+    private string $codingProjectUri;
+    private string $codingTeamDomain;
+    private string $codingToken;
+
     /**
      * Execute the console command.
      *
-     * @return mixed
      */
-    public function handle(Coding $coding)
+    public function handle(Coding $coding): int
     {
+        $this->coding = $coding;
+        $this->setCodingApi();
+
         if ($this->option('coding_import_provider')) {
             $provider = $this->option('coding_import_provider');
         } else {
@@ -49,15 +56,39 @@ class WikiImportCommand extends Command
             );
         }
         if ($provider != 'Confluence') {
-            $this->info('TODO');
-            return;
+            $this->error('TODO');
+            return 1;
         }
 
+        $dataType = config('coding.import.data_type') ?? $this->choice(
+            '数据类型？',
+            ['HTML', 'API'],
+            0
+        );
+        switch ($dataType) {
+            case 'HTML':
+                return $this->handleConfluenceHtml();
+            case 'API':
+                return $this->handleConfluenceApi();
+            default:
+                break;
+        }
+    }
+
+    private function createWiki($data)
+    {
+        $result = $this->coding->createWiki($this->codingToken, $this->codingProjectUri, $data);
+        $path = $result['Response']['Data']['Path'];
+        $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}/wiki/${path}");
+    }
+
+    private function handleConfluenceApi(): int
+    {
         if ($this->option('confluence_base_uri')) {
             $baseUri = $this->option('confluence_base_uri');
         } else {
             $baseUri = config('confluence.base_uri') ?? $this->ask(
-                $provider . ' API 链接：',
+                'Confluence API 链接：',
                 'http://localhost:8090/rest/api/'
             );
         }
@@ -66,49 +97,59 @@ class WikiImportCommand extends Command
         if ($this->option('confluence_username')) {
             $username = $this->option('confluence_username');
         } else {
-            $username = config('confluence.username') ?? $this->ask($provider . ' 账号：', 'admin');
+            $username = config('confluence.username') ?? $this->ask('Confluence 账号：', 'admin');
         }
         if ($this->option('confluence_password')) {
             $password = $this->option('confluence_password');
         } else {
-            $password = config('confluence.password') ?? $this->ask($provider . ' 密码：', '123456');
+            $password = config('confluence.password') ?? $this->ask('Confluence 密码：', '123456');
         }
         config(['confluence.auth' => [$username, $password]]);
 
-        if ($this->option('coding_token')) {
-            $codingToken = $this->option('coding_token');
-        } else {
-            $codingToken = config('coding.token') ?? $this->ask('CODING Token：');
+        $data = Confluence::resource(Content::class)->index();
+        $this->info("已获得 ${data['size']} 条数据");
+        if ($data['size'] == 0) {
+            return 0;
         }
+        $this->info("开始导入 CODING：");
+        foreach ($data['results'] as $result) {
+            $content = Confluence::resource(Content::class)->show($result['id'], ['expand' => 'body.storage']);
+            $this->createWiki([
+                'Title' => $content['title'],
+                'Content' => $content['body']['storage']['value'],
+                'ParentIid' => 0,
+            ]);
+        }
+        return 0;
+    }
 
+    private function handleConfluenceHtml(): int
+    {
+        $dataPath = config('coding.import.data_path') ?? $this->ask('路径：');
+
+        // TODO
+        return 0;
+    }
+
+    private function setCodingApi(): void
+    {
         if ($this->option('coding_team_domain')) {
             $codingTeamDomain = $this->option('coding_team_domain');
         } else {
             $codingTeamDomain = config('coding.team_domain') ?? $this->ask('CODING 团队域名：');
         }
-        $codingTeamDomain = str_replace('.coding.net', '', $codingTeamDomain);
+        $this->codingTeamDomain = str_replace('.coding.net', '', $codingTeamDomain);
 
         if ($this->option('coding_project_uri')) {
-            $codingProjectUri = $this->option('coding_project_uri');
+            $this->codingProjectUri = $this->option('coding_project_uri');
         } else {
-            $codingProjectUri = config('coding.project_uri') ?? $this->ask('CODING 项目标识：');
+            $this->codingProjectUri = config('coding.project_uri') ?? $this->ask('CODING 项目标识：');
         }
 
-        $data = Confluence::resource(Content::class)->index();
-        $this->info("已获得 ${data['size']} 条数据");
-        if ($data['size'] == 0) {
-            return;
-        }
-        $this->info("开始导入 CODING：");
-        foreach ($data['results'] as $result) {
-            $content = Confluence::resource(Content::class)->show($result['id'], ['expand' => 'body.storage']);
-            $result = $coding->createWiki($codingToken, $codingProjectUri, [
-                'Title' => $content['title'],
-                'Content' => $content['body']['storage']['value'],
-                'ParentIid' => 0,
-            ]);
-            $path = $result['Response']['Data']['Path'];
-            $this->info("https://${codingTeamDomain}.coding.net/p/${codingProjectUri}/wiki/${path}");
+        if ($this->option('coding_token')) {
+            $this->codingToken = $this->option('coding_token');
+        } else {
+            $this->codingToken = config('coding.token') ?? $this->ask('CODING Token：');
         }
     }
 }
