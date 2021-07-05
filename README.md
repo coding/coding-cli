@@ -10,17 +10,19 @@ CODING cli 基于 [Laravel Zero](https://laravel-zero.com/)。
 
 ```shell
 docker run -t ecoding/coding-cli
+docker run -t ecoding/coding-cli wiki:import --help
+docker run -t --env CODING_IMPORT_PROVIDER=Confluence --env CONFLUENCE_USERNAME=admin ecoding/coding-cli wiki:import
 ```
 
 ![docker run coding cli](https://user-images.githubusercontent.com/4971414/124300830-8e5afa80-db91-11eb-8032-fc6e7f7f063d.png)
 
 ## 非 Docker 方式运行
 
-要求：PHP 7.4 或更高版本
+要求：PHP 8.0 或更高版本
 
-访问「[CODING 公共制品库](https://coding-public.coding.net/public-artifacts/public/downloads/coding.phar/version/6352163/list)」，进行下载。
+访问「[CODING 公共制品库](https://coding-public.coding.net/public-artifacts/public/downloads/coding.phar/version/6352163/list)」，下载后在命令行中执行。
 
-下载后，建议重命名，并放到系统目录：
+在 Linux/macOS 中，建议重命名，并放到系统目录：
 
 ```shell
 chmod +x coding.phar
