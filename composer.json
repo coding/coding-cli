@@ -17,7 +17,9 @@
     ],
     "require": {
         "php": "^8.0",
+        "ext-dom": "*",
         "ext-json": "*",
+        "ext-libxml": "*",
         "laravel-fans/confluence": "^0.1.1",
         "laravel-zero/framework": "^8.8"
     },
