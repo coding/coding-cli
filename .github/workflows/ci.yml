@@ -25,7 +25,7 @@ jobs:
       - name: Lint
         uses: docker://ecoding/php:8.0
         with:
-          args: ./vendor/bin/phpcs --standard=PSR12 app/ tests/
+          args: ./vendor/bin/phpcs --extensions=php --standard=PSR12 app/ tests/
 
       - name: test
         uses: docker://ecoding/php:8.0
