@@ -1,3 +1,6 @@
 #!/bin/sh
 
-git diff --diff-filter=d --name-only HEAD | xargs ./vendor/bin/phpcs --extensions=php --standard=PSR12
+FILES=$(git diff --diff-filter=d --name-only HEAD)
+if [ -n "$FILES" ]; then
+  echo "$FILES" | xargs ./vendor/bin/phpcs --extensions=php --standard=PSR12
+fi
