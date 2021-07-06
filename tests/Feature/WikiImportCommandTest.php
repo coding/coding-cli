@@ -15,7 +15,8 @@ class WikiImportCommandTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->codingResponse = json_decode(file_get_contents($this->dataDir . 'coding/createWikiResponse.json'), true);
+        $this->codingResponse = json_decode(file_get_contents($this->dataDir . 'coding/createWikiResponse.json'), true)
+            ['Response']['Data'];
     }
 
     public function testHandleIndex()
@@ -158,16 +159,7 @@ class WikiImportCommandTest extends TestCase
             $codingProjectUri,
             $codingResponse
         ) {
-            $mock->shouldReceive('createWiki')->once()->withArgs([
-                $codingToken,
-                $codingProjectUri,
-                [
-                    'Title' => 'Text Demo',
-                    'Content' => '你好',
-                    'ParentIid' => 0,
-                ]
-            ])->andReturn($codingResponse);
-            $mock->shouldReceive('createWiki')->times(1)->andReturn($codingResponse);
+            $mock->shouldReceive('createWiki')->times(2)->andReturn($codingResponse);
         });
 
         $this->artisan('wiki:import')
@@ -178,7 +170,7 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('空间标识：demo')
             ->expectsOutput('发现 2 个一级页面')
             ->expectsOutput("开始导入 CODING：")
-            ->expectsOutput('标题：Text Demo')
+            ->expectsOutput('标题：Image Demo')
             ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")
             ->expectsOutput('标题：Demo')
             ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")

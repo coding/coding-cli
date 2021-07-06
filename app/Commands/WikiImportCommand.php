@@ -38,15 +38,17 @@ class WikiImportCommand extends Command
     private string $codingTeamDomain;
     private string $codingToken;
     private Coding $coding;
+    private \App\Confluence $confluence;
     private \DOMDocument $document;
 
     /**
      * Execute the console command.
      *
      */
-    public function handle(Coding $coding, \DOMDocument $document): int
+    public function handle(Coding $coding, \App\Confluence $confluence, \DOMDocument $document): int
     {
         $this->coding = $coding;
+        $this->confluence = $confluence;
         $this->document = $document;
         $this->setCodingApi();
 
@@ -86,7 +88,7 @@ class WikiImportCommand extends Command
     private function createWiki($data)
     {
         $result = $this->coding->createWiki($this->codingToken, $this->codingProjectUri, $data);
-        $path = $result['Response']['Data']['Path'];
+        $path = $result['Path'];
         $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}/wiki/${path}");
     }
 
@@ -189,14 +191,12 @@ class WikiImportCommand extends Command
                 $pages[] = $aElement->getAttribute('href');
             }
             foreach ($pages as $page) {
-                $this->document->loadHTMLFile($dataPath . $page);
-                $title = trim($this->document->getElementById('title-text')->nodeValue);
-                $title = str_replace($space['name'] . ' : ', '', $title);
-                $this->info("标题：${title}");
+                $data = $this->confluence->parsePageHtml($dataPath . $page, $space['name']);
+                $this->info("标题：${data['title']}");
 
                 $this->createWiki([
-                    'Title' => $title,
-                    'Content' => trim($this->document->getElementById('main-content')->nodeValue),
+                    'Title' => $data['title'],
+                    'Content' => $data['content'],
                     'ParentIid' => 0,
                 ]);
             }
