@@ -43,4 +43,36 @@ class CodingTest extends TestCase
         $result = $coding->createWiki($codingToken, $codingProjectUri, $article);
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
+
+    public function testCreateUploadToken()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/createUploadTokenResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $fileName = $this->faker->word;
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'CreateWiki',
+                        'ProjectName' => $codingProjectUri,
+                        'FileName' => $fileName,
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->createUploadToken($codingToken, $codingProjectUri, $fileName);
+        $this->assertEquals(json_decode($responseBody, true)['Response']['Token'], $result);
+    }
 }

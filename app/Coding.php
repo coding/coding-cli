@@ -28,4 +28,21 @@ class Coding
         ]);
         return json_decode($response->getBody(), true)['Response']['Data'];
     }
+
+    public function createUploadToken($token, $projectName, $fileName)
+    {
+        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => "token ${token}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'Action' => 'CreateWiki',
+                'ProjectName' => $projectName,
+                'FileName' => $fileName,
+            ],
+        ]);
+        return json_decode($response->getBody(), true)['Response']['Token'];
+    }
 }
