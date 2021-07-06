@@ -9,9 +9,9 @@ CODING cli 基于 [Laravel Zero](https://laravel-zero.com/)。
 ## Docker 方式运行
 
 ```shell
-docker run -t ecoding/coding-cli
-docker run -t ecoding/coding-cli wiki:import --help
-docker run -t --env CODING_IMPORT_PROVIDER=Confluence --env CONFLUENCE_USERNAME=admin ecoding/coding-cli wiki:import
+docker run -it ecoding/coding-cli
+docker run -it ecoding/coding-cli wiki:import --help
+docker run -it --env CODING_IMPORT_PROVIDER=Confluence --env CONFLUENCE_USERNAME=admin ecoding/coding-cli wiki:import
 ```
 
 ![docker run coding cli](https://user-images.githubusercontent.com/4971414/124300830-8e5afa80-db91-11eb-8032-fc6e7f7f063d.png)
