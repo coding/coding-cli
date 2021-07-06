@@ -17,6 +17,8 @@ class WikiImportCommand extends Command
      */
     protected $signature = 'wiki:import
         {--coding_import_provider= : 数据来源，如 Confluence、MediaWiki}
+        {--coding_import_data_type= : 数据来源，如 HTML、API}
+        {--coding_import_data_path= : 数据路径，如 ~/Downloads/confluence/space-1/}
         {--confluence_base_uri= : Confluence API URL，如 http://localhost:8090/confluence/rest/api/}
         {--confluence_username=}
         {--confluence_password=}
@@ -32,10 +34,10 @@ class WikiImportCommand extends Command
      */
     protected $description = 'import wiki from confluence and so on';
 
-    private Coding $coding;
     private string $codingProjectUri;
     private string $codingTeamDomain;
     private string $codingToken;
+    private Coding $coding;
     private \DOMDocument $document;
 
     /**
@@ -62,11 +64,15 @@ class WikiImportCommand extends Command
             return 1;
         }
 
-        $dataType = config('coding.import.data_type') ?? $this->choice(
-            '数据类型？',
-            ['HTML', 'API'],
-            0
-        );
+        if ($this->option('coding_import_data_type')) {
+            $dataType = $this->option('coding_import_data_type');
+        } else {
+            $dataType = config('coding.import.data_type') ?? $this->choice(
+                '数据类型？',
+                ['HTML', 'API'],
+                0
+            );
+        }
         switch ($dataType) {
             case 'HTML':
                 return $this->handleConfluenceHtml();
@@ -127,8 +133,13 @@ class WikiImportCommand extends Command
 
     private function handleConfluenceHtml(): int
     {
-        $dataPath = config('coding.import.data_path') ?? $this->ask('路径：');
-        $filePath = str_ends_with($dataPath, '/index.html') ? $dataPath : rtrim($dataPath, " /") . '/index.html';
+        if ($this->option('coding_import_data_path')) {
+            $dataPath = $this->option('coding_import_data_path');
+        } else {
+            $dataPath = config('coding.import.data_path') ?? trim($this->ask('路径：'));
+        }
+        $dataPath = str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
+        $filePath = $dataPath . 'index.html';
         if (!file_exists($filePath)) {
             $this->error("文件不存在：$filePath");
             return 1;
@@ -148,7 +159,47 @@ class WikiImportCommand extends Command
             }
             $this->info('空间名称：' . $space['name']);
             $this->info('空间标识：' . $space['key']);
-            // TODO Available Pages
+
+            $divElements = $this->document->getElementById('content')->getElementsByTagName('div');
+            $divElement = null;
+            foreach ($divElements as $divElement) {
+                if ($divElement->getAttribute('class') != 'pageSection') {
+                    continue;
+                }
+                $h2Element = $divElement->getElementsByTagName('h2')[0];
+                if (!empty($h2Element) && $h2Element->nodeValue == 'Available Pages:') {
+                    break;
+                }
+            }
+            if (empty($divElement)) {
+                $this->info("未发现有效数据");
+                return 0;
+            }
+            $xpath = new \DOMXPath($this->document);
+            $firstLevelLiElements = $xpath->query('ul/li', $divElement);
+            $this->info("发现 {$firstLevelLiElements->count()} 个一级页面");
+            if ($firstLevelLiElements->count() == 0) {
+                return 0;
+            }
+
+            $this->info("开始导入 CODING：");
+            $pages = [];
+            foreach ($firstLevelLiElements as $firstLevelLiElement) {
+                $aElement = $xpath->query('a', $firstLevelLiElement)->item(0);
+                $pages[] = $aElement->getAttribute('href');
+            }
+            foreach ($pages as $page) {
+                $this->document->loadHTMLFile($dataPath . $page);
+                $title = trim($this->document->getElementById('title-text')->nodeValue);
+                $title = str_replace($space['name'] . ' : ', '', $title);
+                $this->info("标题：${title}");
+
+                $this->createWiki([
+                    'Title' => $title,
+                    'Content' => trim($this->document->getElementById('main-content')->nodeValue),
+                    'ParentIid' => 0,
+                ]);
+            }
         } catch (\ErrorException $e) {
             $this->error($e->getMessage());
             return 1;
