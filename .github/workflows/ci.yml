@@ -42,15 +42,19 @@ jobs:
 
       - name: Set env
         run: |
-          echo "CI_SHA_SHORT=$CI_SHA_SHORT" >> $GITHUB_ENV
-          echo "CI_ACTION_REF_NAME=$CI_ACTION_REF_NAME" >> $GITHUB_ENV
+          echo "APP_VERSION=$CI_SHA_SHORT" >> $GITHUB_ENV
+
+      - name: Set env when tag
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          echo "APP_VERSION=$CI_ACTION_REF_NAME" >> $GITHUB_ENV
 
       - name: build
         uses: docker://ecoding/php:8.0
         env:
-          CI_SHA_SHORT: ${{ env.CI_SHA_SHORT }}
+          APP_VERSION: ${{ env.APP_VERSION }}
         with:
-          args: php coding app:build --build-version=${{ env.CI_SHA_SHORT }}
+          args: php coding app:build --build-version=${{ env.APP_VERSION }}
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v2
@@ -74,11 +78,11 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: docker/build-push-action@v2
         env:
-          CI_ACTION_REF_NAME: ${{ env.CI_ACTION_REF_NAME }}
+          APP_VERSION: ${{ env.APP_VERSION }}
         with:
           push: true
           context: .
-          tags: ecoding/coding-cli:latest,ecoding/coding-cli:${{ env.CI_ACTION_REF_NAME }}
+          tags: ecoding/coding-cli:latest,ecoding/coding-cli:${{ env.APP_VERSION }}
 
       - name: Image digest
         if: steps.docker_build.conclusion == 'success'
