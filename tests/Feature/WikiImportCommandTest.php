@@ -151,7 +151,7 @@ class WikiImportCommandTest extends TestCase
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
 
-        $path = $this->dataDir . 'confluence/space-1/';
+        $path = $this->dataDir . 'confluence/space1/';
 
         $codingResponse = $this->codingResponse;
         $this->mock(Coding::class, function (MockInterface $mock) use (
@@ -166,13 +166,13 @@ class WikiImportCommandTest extends TestCase
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('路径：', $path)
-            ->expectsOutput('空间名称：Demo')
-            ->expectsOutput('空间标识：demo')
+            ->expectsOutput('空间名称：空间 1')
+            ->expectsOutput('空间标识：space1')
             ->expectsOutput('发现 2 个一级页面')
             ->expectsOutput("开始导入 CODING：")
             ->expectsOutput('标题：Image Demo')
             ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")
-            ->expectsOutput('标题：Demo')
+            ->expectsOutput('标题：你好世界')
             ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")
             ->assertExitCode(0);
     }

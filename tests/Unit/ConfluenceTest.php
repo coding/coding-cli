@@ -10,7 +10,7 @@ class ConfluenceTest extends TestCase
     public function testParsePageHtml()
     {
         $confluence = new Confluence();
-        $result = $confluence->parsePageHtml($this->dataDir . 'confluence/space-1/text-demo_65601.html', 'Demo');
+        $result = $confluence->parsePageHtml($this->dataDir . 'confluence/space1/text-demo_65601.html', '空间 1');
         $this->assertEquals([
             'title' => 'Text Demo',
             'content' => '你好',
