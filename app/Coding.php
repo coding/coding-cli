@@ -3,14 +3,17 @@
 namespace App;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\Log;
 
 class Coding
 {
     private Client $client;
+    private \ZipArchive $zipArchive;
 
-    public function __construct(Client $client)
+    public function __construct(Client $client = null, \ZipArchive $zipArchive = null)
     {
-        $this->client = $client;
+        $this->client = $client ?? new Client();
+        $this->zipArchive = $zipArchive ?? new \ZipArchive();
     }
 
     public function createWiki($token, $projectName, $data)
@@ -44,5 +47,23 @@ class Coding
             ],
         ]);
         return json_decode($response->getBody(), true)['Response']['Token'];
+    }
+
+    public function createMarkdownZip($markdown, $path, $filename): bool|string
+    {
+        $zipFilename = tempnam(sys_get_temp_dir(), $filename);
+        if ($this->zipArchive->open($zipFilename, \ZipArchive::OVERWRITE) !== true) {
+            Log::error("cannot open <$zipFilename>");
+            return false;
+        }
+        $this->zipArchive->addFromString($filename, $markdown);
+        preg_match_all('/!\[\]\((.+)\)/', $markdown, $matches);
+        if (!empty($matches)) {
+            foreach ($matches[1] as $attachment) {
+                $this->zipArchive->addFile($path . $attachment, $attachment);
+            }
+        }
+        $this->zipArchive->close();
+        return $zipFilename;
     }
 }
