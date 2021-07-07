@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73e0f54fe3c10432106ce6d95250b72e",
+    "content-hash": "a0cdd01087fe07481a9711af17351a28",
     "packages": [
         {
             "name": "brick/math",
@@ -648,7 +648,7 @@
         },
         {
             "name": "illuminate/bus",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/bus.git",
@@ -701,7 +701,7 @@
         },
         {
             "name": "illuminate/cache",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/cache.git",
@@ -758,7 +758,7 @@
         },
         {
             "name": "illuminate/collections",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/collections.git",
@@ -812,7 +812,7 @@
         },
         {
             "name": "illuminate/config",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/config.git",
@@ -860,7 +860,7 @@
         },
         {
             "name": "illuminate/console",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/console.git",
@@ -920,7 +920,7 @@
         },
         {
             "name": "illuminate/container",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/container.git",
@@ -971,7 +971,7 @@
         },
         {
             "name": "illuminate/contracts",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/contracts.git",
@@ -1019,7 +1019,7 @@
         },
         {
             "name": "illuminate/events",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/events.git",
@@ -1074,7 +1074,7 @@
         },
         {
             "name": "illuminate/filesystem",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/filesystem.git",
@@ -1136,7 +1136,7 @@
         },
         {
             "name": "illuminate/macroable",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/macroable.git",
@@ -1298,16 +1298,16 @@
         },
         {
             "name": "illuminate/testing",
-            "version": "v8.49.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/illuminate/testing.git",
-                "reference": "6dba36587dc60eedc8eec5ae9c82a90d4711f0ae"
+                "reference": "12271f68f49bb1063754f7d9d168af1e719b251a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/testing/zipball/6dba36587dc60eedc8eec5ae9c82a90d4711f0ae",
-                "reference": "6dba36587dc60eedc8eec5ae9c82a90d4711f0ae",
+                "url": "https://api.github.com/repos/illuminate/testing/zipball/12271f68f49bb1063754f7d9d168af1e719b251a",
+                "reference": "12271f68f49bb1063754f7d9d168af1e719b251a",
                 "shasum": ""
             },
             "require": {
@@ -1352,7 +1352,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2021-06-09T13:58:54+00:00"
+            "time": "2021-07-04T10:19:03+00:00"
         },
         {
             "name": "jolicode/jolinotif",
@@ -1481,16 +1481,16 @@
         },
         {
             "name": "laravel-zero/foundation",
-            "version": "v8.48.1",
+            "version": "v8.49.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel-zero/foundation.git",
-                "reference": "f8a142aaa0e2d721b613e6cb876c2e12b43d9f9b"
+                "reference": "c2b68f71867899cf6acf0a4215f30be939d11481"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel-zero/foundation/zipball/f8a142aaa0e2d721b613e6cb876c2e12b43d9f9b",
-                "reference": "f8a142aaa0e2d721b613e6cb876c2e12b43d9f9b",
+                "url": "https://api.github.com/repos/laravel-zero/foundation/zipball/c2b68f71867899cf6acf0a4215f30be939d11481",
+                "reference": "c2b68f71867899cf6acf0a4215f30be939d11481",
                 "shasum": ""
             },
             "require": {
@@ -1520,9 +1520,9 @@
                 "laravel"
             ],
             "support": {
-                "source": "https://github.com/laravel-zero/foundation/tree/v8.48.1"
+                "source": "https://github.com/laravel-zero/foundation/tree/v8.49.2"
             },
-            "time": "2021-06-23T14:22:11+00:00"
+            "time": "2021-07-07T09:37:38+00:00"
         },
         {
             "name": "laravel-zero/framework",
@@ -1708,6 +1708,95 @@
                 }
             ],
             "time": "2021-06-23T21:56:05+00:00"
+        },
+        {
+            "name": "league/html-to-markdown",
+            "version": "5.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/thephpleague/html-to-markdown.git",
+                "reference": "c4dbebbebe0fe454b6b38e6c683a977615bd7dc2"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/thephpleague/html-to-markdown/zipball/c4dbebbebe0fe454b6b38e6c683a977615bd7dc2",
+                "reference": "c4dbebbebe0fe454b6b38e6c683a977615bd7dc2",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-xml": "*",
+                "php": "^7.2.5 || ^8.0"
+            },
+            "require-dev": {
+                "mikehaertl/php-shellcommand": "^1.1.0",
+                "phpstan/phpstan": "^0.12.82",
+                "phpunit/phpunit": "^8.5 || ^9.2",
+                "scrutinizer/ocular": "^1.6",
+                "unleashedtech/php-coding-standard": "^2.7",
+                "vimeo/psalm": "^4.6"
+            },
+            "bin": [
+                "bin/html-to-markdown"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "5.1-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "League\\HTMLToMarkdown\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Colin O'Dell",
+                    "email": "colinodell@gmail.com",
+                    "homepage": "https://www.colinodell.com",
+                    "role": "Lead Developer"
+                },
+                {
+                    "name": "Nick Cernis",
+                    "email": "nick@cern.is",
+                    "homepage": "http://modernnerd.net",
+                    "role": "Original Author"
+                }
+            ],
+            "description": "An HTML-to-markdown conversion helper for PHP",
+            "homepage": "https://github.com/thephpleague/html-to-markdown",
+            "keywords": [
+                "html",
+                "markdown"
+            ],
+            "support": {
+                "issues": "https://github.com/thephpleague/html-to-markdown/issues",
+                "source": "https://github.com/thephpleague/html-to-markdown/tree/5.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://www.colinodell.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.paypal.me/colinpodell/10.00",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/colinodell",
+                    "type": "github"
+                },
+                {
+                    "url": "https://www.patreon.com/colinodell",
+                    "type": "patreon"
+                }
+            ],
+            "time": "2021-03-29T01:29:08+00:00"
         },
         {
             "name": "league/mime-type-detection",
@@ -4327,16 +4416,16 @@
         },
         {
             "name": "fakerphp/faker",
-            "version": "v1.14.1",
+            "version": "v1.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/FakerPHP/Faker.git",
-                "reference": "ed22aee8d17c7b396f74a58b1e7fefa4f90d5ef1"
+                "reference": "89c6201c74db25fa759ff16e78a4d8f32547770e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/ed22aee8d17c7b396f74a58b1e7fefa4f90d5ef1",
-                "reference": "ed22aee8d17c7b396f74a58b1e7fefa4f90d5ef1",
+                "url": "https://api.github.com/repos/FakerPHP/Faker/zipball/89c6201c74db25fa759ff16e78a4d8f32547770e",
+                "reference": "89c6201c74db25fa759ff16e78a4d8f32547770e",
                 "shasum": ""
             },
             "require": {
@@ -4386,9 +4475,9 @@
             ],
             "support": {
                 "issues": "https://github.com/FakerPHP/Faker/issues",
-                "source": "https://github.com/FakerPHP/Faker/tree/v.1.14.1"
+                "source": "https://github.com/FakerPHP/Faker/tree/v1.15.0"
             },
-            "time": "2021-03-30T06:27:33+00:00"
+            "time": "2021-07-06T20:39:40+00:00"
         },
         {
             "name": "hamcrest/hamcrest-php",
