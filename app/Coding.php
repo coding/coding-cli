@@ -46,7 +46,16 @@ class Coding
                 'FileName' => $fileName,
             ],
         ]);
-        return json_decode($response->getBody(), true)['Response']['Token'];
+        $uploadToken = json_decode($response->getBody(), true)['Response']['Token'];
+        preg_match_all(
+            '|https://([a-z0-9\-]+)-(\d+)\.cos\.([a-z0-9\-]+)\.myqcloud\.com|',
+            $uploadToken['UploadLink'],
+            $matches
+        );
+        $uploadToken['Bucket'] = $matches[1][0];
+        $uploadToken['AppId'] = $matches[2][0];
+        $uploadToken['Region'] = $matches[3][0];
+        return $uploadToken;
     }
 
     public function createMarkdownZip($markdown, $path, $filename): bool|string
