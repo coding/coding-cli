@@ -3,8 +3,10 @@
 namespace App;
 
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Coding
 {
@@ -59,16 +61,14 @@ class Coding
         return $uploadToken;
     }
 
-    public function createMarkdownZip($markdown, $path, $filename): bool|string
+    public function createMarkdownZip($markdown, $path, $markdownFilename): bool|string
     {
-        $tmpFile = tempnam(sys_get_temp_dir(), $filename);
-        $zipFileFullPath = $tmpFile . '.zip';
-        rename($tmpFile, $zipFileFullPath);
-        if ($this->zipArchive->open($zipFileFullPath, \ZipArchive::OVERWRITE) !== true) {
+        $zipFileFullPath = sys_get_temp_dir() . '/' . $markdownFilename . '-' . Str::uuid() . '.zip';
+        if ($this->zipArchive->open($zipFileFullPath, \ZipArchive::CREATE) !== true) {
             Log::error("cannot open <$zipFileFullPath>");
             return false;
         }
-        $this->zipArchive->addFromString($filename, $markdown);
+        $this->zipArchive->addFromString($markdownFilename, $markdown);
         preg_match_all('/!\[\]\((.+)\)/', $markdown, $matches);
         if (!empty($matches)) {
             foreach ($matches[1] as $attachment) {
@@ -88,6 +88,38 @@ class Coding
         config(['filesystems.disks.cos.region' => $uploadToken['Region']]);
         config(['filesystems.disks.cos.bucket' => $uploadToken['Bucket']]);
 
-        return Storage::disk('cos')->put(basename($fileFullPath), $fileFullPath);
+        return Storage::disk('cos')->put(basename($fileFullPath), File::get($fileFullPath));
+    }
+
+    /**
+     * 获取 Wiki 导入任务的进度（API 文档未展示，其实此接口已上线）
+     *
+     * @param string $token
+     * @param string $projectName
+     * @param string $jobId
+     * @return mixed
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    public function getImportJobStatus(string $token, string $projectName, string $jobId)
+    {
+        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => "token ${token}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'Action' => 'DescribeImportJobStatus',
+                'ProjectName' => $projectName,
+                'JobId' => $jobId,
+            ],
+        ]);
+        $result = json_decode($response->getBody(), true);
+        if (isset($result['Response']['Data']['Status'])) {
+            return $result['Response']['Data']['Status'];
+        } else {
+            // TODO exception message
+            return new \Exception('failed');
+        }
     }
 }

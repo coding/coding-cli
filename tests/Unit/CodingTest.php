@@ -122,4 +122,36 @@ class CodingTest extends TestCase
 
         Storage::disk('cos')->assertExists(basename($file));
     }
+
+    public function testGetImportJobStatus()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/DescribeImportJobStatusResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $jobId = '123456ad-f123-4ac2-9586-42ebe5d1234d';
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'DescribeImportJobStatus',
+                        'ProjectName' => $codingProjectUri,
+                        'JobId' => $jobId,
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->getImportJobStatus($codingToken, $codingProjectUri, $jobId);
+        $this->assertEquals('success', $result);
+    }
 }
