@@ -5,18 +5,22 @@ namespace Tests\Feature;
 use App\Coding;
 use Confluence\Content;
 use LaravelFans\Confluence\Facades\Confluence;
+use Mockery\Mock;
 use Mockery\MockInterface;
 use Tests\TestCase;
+use Tests\Unit\CodingTest;
 
 class WikiImportCommandTest extends TestCase
 {
-    private array $codingResponse;
+    private array $codingCreateWikiResponse;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->codingResponse = json_decode(file_get_contents($this->dataDir . 'coding/createWikiResponse.json'), true)
-            ['Response']['Data'];
+        $this->codingCreateWikiResponse = json_decode(
+            file_get_contents($this->dataDir . 'coding/createWikiResponse.json'),
+            true
+        )['Response']['Data'];
     }
 
     public function testHandleIndex()
@@ -91,7 +95,7 @@ class WikiImportCommandTest extends TestCase
         });
         Confluence::setResource($mock);
 
-        $codingResponse = $this->codingResponse;
+        $codingResponse = $this->codingCreateWikiResponse;
         $this->mock(Coding::class, function (MockInterface $mock) use (
             $codingToken,
             $codingProjectUri,
@@ -142,7 +146,7 @@ class WikiImportCommandTest extends TestCase
             ->assertExitCode(1);
     }
 
-    public function testHandleConfluenceHtml()
+    public function testHandleConfluenceHtmlSuccess()
     {
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
@@ -151,29 +155,31 @@ class WikiImportCommandTest extends TestCase
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
 
-        $path = $this->dataDir . 'confluence/space1/';
+        $codingPath = $this->dataDir . 'coding/';
+        // 注意：不能使用 partialMock
+        // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
+        $mock = \Mockery::mock(Coding::class, [])->makePartial();
+        $this->instance(Coding::class, $mock);
 
-        $codingResponse = $this->codingResponse;
-        $this->mock(Coding::class, function (MockInterface $mock) use (
-            $codingToken,
-            $codingProjectUri,
-            $codingResponse
-        ) {
-            $mock->shouldReceive('createWiki')->times(2)->andReturn($codingResponse);
-        });
+        $mock->shouldReceive('createUploadToken')->times(2)->andReturn(CodingTest::$uploadToken);
+        $mock->shouldReceive('upload')->times(2)->andReturn(true);
+        $mock->shouldReceive('createWikiByZip')->times(2)->andReturn(json_decode(
+            file_get_contents($codingPath . 'CreateWikiByZipResponse.json'),
+            true
+        )['Response']);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('路径：', $path)
+            ->expectsQuestion('路径：', $this->dataDir . 'confluence/space1/')
             ->expectsOutput('空间名称：空间 1')
             ->expectsOutput('空间标识：space1')
             ->expectsOutput('发现 2 个一级页面')
             ->expectsOutput("开始导入 CODING：")
             ->expectsOutput('标题：Image Demo')
-            ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->expectsOutput('标题：你好世界')
-            ->expectsOutput("https://${codingTeamDomain}.coding.net/p/$codingProjectUri/wiki/27")
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
     }
 }

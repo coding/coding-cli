@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Coding;
 use Confluence\Content;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
@@ -185,20 +186,28 @@ class WikiImportCommand extends Command
             }
 
             $this->info("开始导入 CODING：");
-            $pages = [];
+            $pageTitles = [];
             foreach ($firstLevelLiElements as $firstLevelLiElement) {
                 $aElement = $xpath->query('a', $firstLevelLiElement)->item(0);
-                $pages[] = $aElement->getAttribute('href');
+                $pageTitles[$aElement->getAttribute('href')] = $aElement->nodeValue;
             }
-            foreach ($pages as $page) {
-                $data = $this->confluence->parsePageHtml($dataPath . $page, $space['name']);
-                $this->info("标题：${data['title']}");
-
-                $this->createWiki([
-                    'Title' => $data['title'],
-                    'Content' => $data['content'],
+            foreach ($pageTitles as $page => $title) {
+                $this->info('标题：' . $title);
+                $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
+                $mdFilename = substr($page, 0, -5) . '.md';
+                $zipFileFullPath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
+                $zipFilename = basename($zipFileFullPath);
+                $uploadToken = $this->coding->createUploadToken(
+                    $this->codingToken,
+                    $this->codingProjectUri,
+                    $zipFilename
+                );
+                $this->coding->upload($uploadToken, $zipFileFullPath);
+                $result = $this->coding->createWikiByZip($this->codingToken, $this->codingProjectUri, $uploadToken, [
                     'ParentIid' => 0,
+                    'FileName' => $zipFilename,
                 ]);
+                $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
             }
         } catch (\ErrorException $e) {
             $this->error($e->getMessage());
