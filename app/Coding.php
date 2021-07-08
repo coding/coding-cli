@@ -91,6 +91,32 @@ class Coding
         return Storage::disk('cos')->put(basename($fileFullPath), File::get($fileFullPath));
     }
 
+    public function createWikiByZip(string $token, string $projectName, array $uploadToken, array $data)
+    {
+        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => "token ${token}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'Action' => 'CreateWikiByZip',
+                'ProjectName' => $projectName,
+                'ParentIid' => $data['ParentIid'],
+                'FileName' => $data['FileName'],
+                'Key' => $data['FileName'],
+                'Time' => $uploadToken['Time'],
+                'AuthToken' => $uploadToken['AuthToken'],
+            ],
+        ]);
+        $result = json_decode($response->getBody(), true);
+        if (isset($result['Response']['JobId'])) {
+            return $result['Response'];
+        } else {
+            return new \Exception('createWikiByZip failed');
+        }
+    }
+
     /**
      * 获取 Wiki 导入任务的进度（API 文档未展示，其实此接口已上线）
      *
