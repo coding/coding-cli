@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Coding;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class CodingTest extends TestCase
@@ -64,7 +65,7 @@ class CodingTest extends TestCase
                         'Content-Type' => 'application/json'
                     ],
                     'json' => [
-                        'Action' => 'CreateWiki',
+                        'Action' => 'CreateUploadToken',
                         'ProjectName' => $codingProjectUri,
                         'FileName' => $fileName,
                     ],
@@ -81,7 +82,7 @@ class CodingTest extends TestCase
             'UploadLink' => 'https://coding-net-dev-file-123456.cos.ap-shanghai.myqcloud.com',
             'UpToken' => 'EOlMEc2x0xbrFoL9CMy7OqDl5413654938410a360a63207e30dab4655pMKmNJ3t5M-Z8bGt',
             'Time' => 1625579588693,
-            'Bucket' => 'coding-net-dev-file',
+            'Bucket' => 'coding-net-dev-file-123456',
             'AppId' => '123456',
             'Region' => 'ap-shanghai',
         ], $result);
@@ -102,5 +103,23 @@ class CodingTest extends TestCase
         $this->assertEquals('image-demo_65619.md', $zip->getNameIndex(0));
         $this->assertEquals('attachments/65619/65624.png', $zip->getNameIndex(1));
         $this->assertEquals('attachments/65619/65623.png', $zip->getNameIndex(2));
+    }
+
+    public function testUpload()
+    {
+        $uploadToken = [
+            'SecretId' => 'AKIDU-VqQm39vRar-ZrHj1UIE5u2gYJ7gWFcG2ThwFNO9eU1HbyQlZp8vVcQ99',
+            'SecretKey' => 'clUYSNeg2es16EILsrF6RyCD3ss6uFLX3Xgc=',
+            'Bucket' => 'coding-net-dev-file-123456',
+            'AppId' => '123456',
+            'Region' => 'ap-shanghai',
+        ];
+        $file = $this->faker->filePath();
+        Storage::fake('cos');
+
+        $coding = new Coding();
+        $coding->upload($uploadToken, $file);
+
+        Storage::disk('cos')->assertExists(basename($file));
     }
 }

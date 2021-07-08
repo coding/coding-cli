@@ -56,6 +56,7 @@ return [
     'providers' => [
         App\Providers\AppServiceProvider::class,
         \LaravelFans\Confluence\ConfluenceServiceProvider::class,
+        \Dscmall\Flysystem\Cos\CosStorageServiceProvider::class,
     ],
 
 ];

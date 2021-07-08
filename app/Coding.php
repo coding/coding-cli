@@ -4,6 +4,7 @@ namespace App;
 
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class Coding
 {
@@ -41,7 +42,7 @@ class Coding
                 'Content-Type' => 'application/json'
             ],
             'json' => [
-                'Action' => 'CreateWiki',
+                'Action' => 'CreateUploadToken',
                 'ProjectName' => $projectName,
                 'FileName' => $fileName,
             ],
@@ -52,7 +53,7 @@ class Coding
             $uploadToken['UploadLink'],
             $matches
         );
-        $uploadToken['Bucket'] = $matches[1][0];
+        $uploadToken['Bucket'] = $matches[1][0] . '-' . $matches[2][0];
         $uploadToken['AppId'] = $matches[2][0];
         $uploadToken['Region'] = $matches[3][0];
         return $uploadToken;
@@ -60,9 +61,11 @@ class Coding
 
     public function createMarkdownZip($markdown, $path, $filename): bool|string
     {
-        $zipFilename = tempnam(sys_get_temp_dir(), $filename);
-        if ($this->zipArchive->open($zipFilename, \ZipArchive::OVERWRITE) !== true) {
-            Log::error("cannot open <$zipFilename>");
+        $tmpFile = tempnam(sys_get_temp_dir(), $filename);
+        $zipFileFullPath = $tmpFile . '.zip';
+        rename($tmpFile, $zipFileFullPath);
+        if ($this->zipArchive->open($zipFileFullPath, \ZipArchive::OVERWRITE) !== true) {
+            Log::error("cannot open <$zipFileFullPath>");
             return false;
         }
         $this->zipArchive->addFromString($filename, $markdown);
@@ -73,6 +76,18 @@ class Coding
             }
         }
         $this->zipArchive->close();
-        return $zipFilename;
+        return $zipFileFullPath;
+    }
+
+    public function upload(array $uploadToken, string $fileFullPath): bool
+    {
+        config(['filesystems.disks.cos.credentials.appId' => $uploadToken['AppId']]);
+        config(['filesystems.disks.cos.credentials.secretId' => $uploadToken['SecretId']]);
+        config(['filesystems.disks.cos.credentials.secretKey' => $uploadToken['SecretKey']]);
+        config(['filesystems.disks.cos.credentials.token' => $uploadToken['UpToken']]);
+        config(['filesystems.disks.cos.region' => $uploadToken['Region']]);
+        config(['filesystems.disks.cos.bucket' => $uploadToken['Bucket']]);
+
+        return Storage::disk('cos')->put(basename($fileFullPath), $fileFullPath);
     }
 }
