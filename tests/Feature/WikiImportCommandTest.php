@@ -7,7 +7,6 @@ use Confluence\Content;
 use LaravelFans\Confluence\Facades\Confluence;
 use Mockery\MockInterface;
 use Tests\TestCase;
-use Tests\Unit\CodingTest;
 
 class WikiImportCommandTest extends TestCase
 {
