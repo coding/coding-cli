@@ -34,7 +34,7 @@ class WikiImportCommand extends Command
      *
      * @var string
      */
-    protected $description = 'import wiki from confluence and so on';
+    protected $description = '从 Confluence 导入 Wiki';
 
     private \App\Confluence $confluence;
     private \DOMDocument $document;

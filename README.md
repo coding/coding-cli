@@ -14,7 +14,7 @@ docker run -it ecoding/coding-cli wiki:import --help
 docker run -it --env CODING_IMPORT_PROVIDER=Confluence --env CONFLUENCE_USERNAME=admin ecoding/coding-cli wiki:import
 ```
 
-![docker run coding cli](https://user-images.githubusercontent.com/4971414/124300830-8e5afa80-db91-11eb-8032-fc6e7f7f063d.png)
+![docker run coding cli](https://user-images.githubusercontent.com/4971414/124946851-f0a87500-e041-11eb-9840-1c66e4773af1.png)
 
 ## 非 Docker 方式运行
 
