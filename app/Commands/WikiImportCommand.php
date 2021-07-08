@@ -4,13 +4,14 @@ namespace App\Commands;
 
 use App\Coding;
 use Confluence\Content;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
 
 class WikiImportCommand extends Command
 {
+    use WithCoding;
+
     /**
      * The signature of the command.
      *
@@ -35,10 +36,6 @@ class WikiImportCommand extends Command
      */
     protected $description = 'import wiki from confluence and so on';
 
-    private string $codingProjectUri;
-    private string $codingTeamDomain;
-    private string $codingToken;
-    private Coding $coding;
     private \App\Confluence $confluence;
     private \DOMDocument $document;
 
@@ -195,18 +192,12 @@ class WikiImportCommand extends Command
                 $this->info('标题：' . $title);
                 $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
                 $mdFilename = substr($page, 0, -5) . '.md';
-                $zipFileFullPath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
-                $zipFilename = basename($zipFileFullPath);
-                $uploadToken = $this->coding->createUploadToken(
+                $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
+                $result = $this->coding->createWikiByUploadZip(
                     $this->codingToken,
                     $this->codingProjectUri,
-                    $zipFilename
+                    $zipFilePath
                 );
-                $this->coding->upload($uploadToken, $zipFileFullPath);
-                $result = $this->coding->createWikiByZip($this->codingToken, $this->codingProjectUri, $uploadToken, [
-                    'ParentIid' => 0,
-                    'FileName' => $zipFilename,
-                ]);
                 $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
             }
         } catch (\ErrorException $e) {
@@ -215,27 +206,5 @@ class WikiImportCommand extends Command
         }
 
         return 0;
-    }
-
-    private function setCodingApi(): void
-    {
-        if ($this->option('coding_team_domain')) {
-            $codingTeamDomain = $this->option('coding_team_domain');
-        } else {
-            $codingTeamDomain = config('coding.team_domain') ?? $this->ask('CODING 团队域名：');
-        }
-        $this->codingTeamDomain = str_replace('.coding.net', '', $codingTeamDomain);
-
-        if ($this->option('coding_project_uri')) {
-            $this->codingProjectUri = $this->option('coding_project_uri');
-        } else {
-            $this->codingProjectUri = config('coding.project_uri') ?? $this->ask('CODING 项目标识：');
-        }
-
-        if ($this->option('coding_token')) {
-            $this->codingToken = $this->option('coding_token');
-        } else {
-            $this->codingToken = config('coding.token') ?? $this->ask('CODING Token：');
-        }
     }
 }

@@ -23,6 +23,17 @@ class CodingTest extends TestCase
         'Region' => 'ap-shanghai',
     ];
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $codingToken = $this->faker->md5;
+        config(['coding.token' => $codingToken]);
+        $codingTeamDomain =  $this->faker->domainWord;
+        config(['coding.team_domain' => $codingTeamDomain]);
+        $codingProjectUri = $this->faker->slug;
+        config(['coding.project_uri' => $codingProjectUri]);
+    }
+
     public function testCreateWiki()
     {
         $responseBody = file_get_contents($this->dataDir . 'coding/createWikiResponse.json');
@@ -186,6 +197,23 @@ class CodingTest extends TestCase
             ->willReturn(new Response(200, [], $responseBody));
         $coding = new Coding($clientMock);
         $result = $coding->createWikiByZip($codingToken, $codingProjectUri, self::$uploadToken, $data);
+        $this->assertArrayHasKey('JobId', $result);
+    }
+
+    public function testCreateWikiByUploadZip()
+    {
+        $mock = \Mockery::mock(Coding::class, [])->makePartial();
+        $this->instance(Coding::class, $mock);
+
+        $mock->shouldReceive('createUploadToken')->times(1)->andReturn(CodingTest::$uploadToken);
+        $mock->shouldReceive('upload')->times(1)->andReturn(true);
+        $mock->shouldReceive('createWikiByZip')->times(1)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
+            true
+        )['Response']);
+
+        $filePath = $this->faker->filePath();
+        $result = $mock->createWikiByUploadZip('token', 'project', $filePath);
         $this->assertArrayHasKey('JobId', $result);
     }
 }

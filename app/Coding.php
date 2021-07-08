@@ -148,4 +148,19 @@ class Coding
             return new \Exception('failed');
         }
     }
+
+    public function createWikiByUploadZip(string $token, string $projectName, string $zipFileFullPath)
+    {
+        $zipFilename = basename($zipFileFullPath);
+        $uploadToken = $this->createUploadToken(
+            $token,
+            $projectName,
+            $zipFilename
+        );
+        $this->upload($uploadToken, $zipFileFullPath);
+        return $this->createWikiByZip($token, $projectName, $uploadToken, [
+            'ParentIid' => 0,
+            'FileName' => $zipFilename,
+        ]);
+    }
 }

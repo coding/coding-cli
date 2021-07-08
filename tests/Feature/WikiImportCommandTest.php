@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Coding;
 use Confluence\Content;
 use LaravelFans\Confluence\Facades\Confluence;
-use Mockery\Mock;
 use Mockery\MockInterface;
 use Tests\TestCase;
 use Tests\Unit\CodingTest;
@@ -155,16 +154,13 @@ class WikiImportCommandTest extends TestCase
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
 
-        $codingPath = $this->dataDir . 'coding/';
         // 注意：不能使用 partialMock
         // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
         $mock = \Mockery::mock(Coding::class, [])->makePartial();
         $this->instance(Coding::class, $mock);
 
-        $mock->shouldReceive('createUploadToken')->times(2)->andReturn(CodingTest::$uploadToken);
-        $mock->shouldReceive('upload')->times(2)->andReturn(true);
-        $mock->shouldReceive('createWikiByZip')->times(2)->andReturn(json_decode(
-            file_get_contents($codingPath . 'CreateWikiByZipResponse.json'),
+        $mock->shouldReceive('createWikiByUploadZip')->times(2)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
             true
         )['Response']);
 
