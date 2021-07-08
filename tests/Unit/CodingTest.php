@@ -10,6 +10,19 @@ use Tests\TestCase;
 
 class CodingTest extends TestCase
 {
+    private array $uploadToken = [
+        'AuthToken' => '65e5968b5e17d5aaa3f5d33200aca2d1911fe2ad2948b47d899d46e6da1e4',
+        'Provide' => 'TENCENT',
+        'SecretId' => 'AKIDU-VqQm39vRar-ZrHj1UIE5u2gYJ7gWFcG2ThwFNO9eU1HbyQlZp8vVcQ99',
+        'SecretKey' => 'clUYSNeg2es16EILsrF6RyCD3ss6uFLX3Xgc=',
+        'UploadLink' => 'https://coding-net-dev-file-123456.cos.ap-shanghai.myqcloud.com',
+        'UpToken' => 'EOlMEc2x0xbrFoL9CMy7OqDl5413654938410a360a63207e30dab4655pMKmNJ3t5M-Z8bGt',
+        'Time' => 1625579588693,
+        'Bucket' => 'coding-net-dev-file-123456',
+        'AppId' => '123456',
+        'Region' => 'ap-shanghai',
+    ];
+
     public function testCreateWiki()
     {
         $responseBody = file_get_contents($this->dataDir . 'coding/createWikiResponse.json');
@@ -74,18 +87,7 @@ class CodingTest extends TestCase
             ->willReturn(new Response(200, [], $responseBody));
         $coding = new Coding($clientMock);
         $result = $coding->createUploadToken($codingToken, $codingProjectUri, $fileName);
-        $this->assertEquals([
-            'AuthToken' => '65e5968b5e17d5aaa3f5d33200aca2d1911fe2ad2948b47d899d46e6da1e4',
-            'Provide' => 'TENCENT',
-            'SecretId' => 'AKIDU-VqQm39vRar-ZrHj1UIE5u2gYJ7gWFcG2ThwFNO9eU1HbyQlZp8vVcQ99',
-            'SecretKey' => 'clUYSNeg2es16EILsrF6RyCD3ss6uFLX3Xgc=',
-            'UploadLink' => 'https://coding-net-dev-file-123456.cos.ap-shanghai.myqcloud.com',
-            'UpToken' => 'EOlMEc2x0xbrFoL9CMy7OqDl5413654938410a360a63207e30dab4655pMKmNJ3t5M-Z8bGt',
-            'Time' => 1625579588693,
-            'Bucket' => 'coding-net-dev-file-123456',
-            'AppId' => '123456',
-            'Region' => 'ap-shanghai',
-        ], $result);
+        $this->assertEquals($this->uploadToken, $result);
     }
 
     public function testCreateMarkdownZip()
@@ -107,18 +109,11 @@ class CodingTest extends TestCase
 
     public function testUpload()
     {
-        $uploadToken = [
-            'SecretId' => 'AKIDU-VqQm39vRar-ZrHj1UIE5u2gYJ7gWFcG2ThwFNO9eU1HbyQlZp8vVcQ99',
-            'SecretKey' => 'clUYSNeg2es16EILsrF6RyCD3ss6uFLX3Xgc=',
-            'Bucket' => 'coding-net-dev-file-123456',
-            'AppId' => '123456',
-            'Region' => 'ap-shanghai',
-        ];
         $file = $this->faker->filePath();
         Storage::fake('cos');
 
         $coding = new Coding();
-        $coding->upload($uploadToken, $file);
+        $coding->upload($this->uploadToken, $file);
 
         Storage::disk('cos')->assertExists(basename($file));
     }
@@ -153,5 +148,44 @@ class CodingTest extends TestCase
         $coding = new Coding($clientMock);
         $result = $coding->getImportJobStatus($codingToken, $codingProjectUri, $jobId);
         $this->assertEquals('success', $result);
+    }
+
+    public function testCreateWikiByZip()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/CreateWikiByZipResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+
+        $data = [
+            'ParentIid' => 0,
+            'FileName' => $this->faker->word,
+        ];
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'CreateWikiByZip',
+                        'ProjectName' => $codingProjectUri,
+                        'ParentIid' => $data['ParentIid'],
+                        'FileName' => $data['FileName'],
+                        'Key' => $data['FileName'],
+                        'Time' => $this->uploadToken['Time'],
+                        'AuthToken' => $this->uploadToken['AuthToken'],
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->createWikiByZip($codingToken, $codingProjectUri, $this->uploadToken, $data);
+        $this->assertArrayHasKey('JobId', $result);
     }
 }
