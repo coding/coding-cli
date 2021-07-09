@@ -132,14 +132,14 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('路径：', '~/Downloads/')
+            ->expectsQuestion('空间导出的 HTML 目录', '~/Downloads/')
             ->expectsOutput('文件不存在：~/Downloads/index.html')
             ->assertExitCode(1);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('路径：', '~/Downloads/index.html')
+            ->expectsQuestion('空间导出的 HTML 目录', '~/Downloads/index.html')
             ->expectsOutput('文件不存在：~/Downloads/index.html')
             ->assertExitCode(1);
     }
@@ -166,7 +166,7 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('路径：', $this->dataDir . 'confluence/space1/')
+            ->expectsQuestion('空间导出的 HTML 目录', $this->dataDir . 'confluence/space1/')
             ->expectsOutput('空间名称：空间 1')
             ->expectsOutput('空间标识：space1')
             ->expectsOutput('发现 2 个一级页面')

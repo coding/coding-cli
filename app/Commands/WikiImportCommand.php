@@ -19,8 +19,8 @@ class WikiImportCommand extends Command
      */
     protected $signature = 'wiki:import
         {--coding_import_provider= : 数据来源，如 Confluence、MediaWiki}
-        {--coding_import_data_type= : 数据来源，如 HTML、API}
-        {--coding_import_data_path= : 数据路径，如 ~/Downloads/confluence/space-1/}
+        {--coding_import_data_type= : 数据类型，如 HTML、API}
+        {--coding_import_data_path= : 空间导出的 HTML 目录，如 ./confluence/space1/}
         {--confluence_base_uri= : Confluence API URL，如 http://localhost:8090/confluence/rest/api/}
         {--confluence_username=}
         {--confluence_password=}
@@ -136,7 +136,10 @@ class WikiImportCommand extends Command
         if ($this->option('coding_import_data_path')) {
             $dataPath = $this->option('coding_import_data_path');
         } else {
-            $dataPath = config('coding.import.data_path') ?? trim($this->ask('路径：'));
+            $dataPath = config('coding.import.data_path') ?? trim($this->ask(
+                '空间导出的 HTML 目录',
+                './confluence/space1/'
+            ));
         }
         $dataPath = str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
         $filePath = $dataPath . 'index.html';
