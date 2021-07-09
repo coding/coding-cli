@@ -17,6 +17,7 @@ class CodingTest extends TestCase
         'SecretKey' => 'clUYSNeg2es16EILsrF6RyCD3ss6uFLX3Xgc=',
         'UploadLink' => 'https://coding-net-dev-file-123456.cos.ap-shanghai.myqcloud.com',
         'UpToken' => 'EOlMEc2x0xbrFoL9CMy7OqDl5413654938410a360a63207e30dab4655pMKmNJ3t5M-Z8bGt',
+        'StorageKey' => 'b5d0d8e0-3aca-11eb-8673-a9b6d94ca755.zip',
         'Time' => 1625579588693,
         'Bucket' => 'coding-net-dev-file-123456',
         'AppId' => '123456',
@@ -126,7 +127,7 @@ class CodingTest extends TestCase
         $coding = new Coding();
         $coding->upload(self::$uploadToken, $file);
 
-        Storage::disk('cos')->assertExists(basename($file));
+        Storage::disk('cos')->assertExists(self::$uploadToken['StorageKey']);
     }
 
     public function testGetImportJobStatus()

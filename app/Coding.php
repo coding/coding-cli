@@ -88,7 +88,7 @@ class Coding
         config(['filesystems.disks.cos.region' => $uploadToken['Region']]);
         config(['filesystems.disks.cos.bucket' => $uploadToken['Bucket']]);
 
-        return Storage::disk('cos')->put(basename($fileFullPath), File::get($fileFullPath));
+        return Storage::disk('cos')->put($uploadToken['StorageKey'], File::get($fileFullPath));
     }
 
     public function createWikiByZip(string $token, string $projectName, array $uploadToken, array $data)
