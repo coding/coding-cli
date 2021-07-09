@@ -162,6 +162,10 @@ class WikiImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
             true
         )['Response']);
+        $mock->shouldReceive('getImportJobStatus')->times(4)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
+            true
+        )['Response']['Data']);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')

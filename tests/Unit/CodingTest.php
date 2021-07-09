@@ -148,7 +148,8 @@ class CodingTest extends TestCase
             ->willReturn(new Response(200, [], $responseBody));
         $coding = new Coding($clientMock);
         $result = $coding->getImportJobStatus($codingToken, $codingProjectUri, $jobId);
-        $this->assertEquals('success', $result);
+        $this->assertEquals('success', $result['Status']);
+        $this->assertEquals([27], $result['Iids']);
     }
 
     public function testCreateWikiByZip()
@@ -158,7 +159,7 @@ class CodingTest extends TestCase
         $codingProjectUri = $this->faker->slug;
 
         $data = [
-            'ParentIid' => 0,
+            'ParentIid' => $this->faker->randomNumber(),
             'FileName' => $this->faker->word,
         ];
         $clientMock = $this->getMockBuilder(Client::class)->getMock();
@@ -203,7 +204,7 @@ class CodingTest extends TestCase
         )['Response']);
 
         $filePath = $this->faker->filePath();
-        $result = $mock->createWikiByUploadZip('token', 'project', $filePath);
+        $result = $mock->createWikiByUploadZip('token', 'project', $filePath, $this->faker->randomNumber());
         $this->assertArrayHasKey('JobId', $result);
     }
 }
