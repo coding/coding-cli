@@ -160,32 +160,41 @@ class WikiImportCommand extends Command
             $this->info('空间名称：' . $space['name']);
             $this->info('空间标识：' . $space['key']);
 
-            $pages = $this->confluence->parseAvailablePages($this->document);
+            $pages = $this->confluence->parseAvailablePages($filePath);
             if (empty($pages['tree'])) {
                 $this->info("未发现有效数据");
                 return 0;
             } else {
                 $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             }
-
             $this->info("开始导入 CODING：");
-            foreach ($pages['tree'] as $page) {
-                $this->info('标题：' . $pages['titles'][$page]);
-                $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
-                $mdFilename = substr($page, 0, -5) . '.md';
-                $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
-                $result = $this->coding->createWikiByUploadZip(
-                    $this->codingToken,
-                    $this->codingProjectUri,
-                    $zipFilePath
-                );
-                $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
-            }
+            $this->uploadConfluencePages($dataPath, $pages['tree'], $pages['titles']);
         } catch (\ErrorException $e) {
             $this->error($e->getMessage());
             return 1;
         }
 
         return 0;
+    }
+
+    private function uploadConfluencePages(string $dataPath, array $tree, array $titles): void
+    {
+        foreach ($tree as $page => $subPages) {
+            $this->info('标题：' . $titles[$page]);
+            $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
+            $mdFilename = substr($page, 0, -5) . '.md';
+            $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
+            $result = $this->coding->createWikiByUploadZip(
+                $this->codingToken,
+                $this->codingProjectUri,
+                $zipFilePath
+            );
+            $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
+            // TODO 指定 parent
+            if (!empty($subPages)) {
+                $this->info('发现 ' . count($subPages) . ' 个子页面');
+                $this->uploadConfluencePages($dataPath, $subPages, $titles);
+            }
+        }
     }
 }

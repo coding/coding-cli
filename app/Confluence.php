@@ -10,6 +10,7 @@ class Confluence
 {
     private \DOMDocument $document;
     private HtmlConverter $htmlConverter;
+    private array $pageTitles;
 
     public function __construct(\DOMDocument $document = null, HtmlConverter $htmlConverter = null)
     {
@@ -42,17 +43,12 @@ class Confluence
     }
 
     /**
-     * @param \DOMDocument $document
      * @return array ['tree' => "array", 'titles' => "array"]
-     * @todo document 对象和本类别的方法不一致
      */
-    public function parseAvailablePages(\DOMDocument $document): array
+    public function parseAvailablePages(string $filename): array
     {
-        $pages = [
-            'tree' => [],
-            'titles' => [],
-        ];
-        $divElements = $document->getElementById('content')->getElementsByTagName('div');
+        $this->document->loadHTMLFile($filename);
+        $divElements = $this->document->getElementById('content')->getElementsByTagName('div');
         $divElement = null;
         foreach ($divElements as $divElement) {
             if ($divElement->getAttribute('class') != 'pageSection') {
@@ -64,20 +60,32 @@ class Confluence
             }
         }
         if (empty($divElement)) {
-            return $pages;
+            return [
+                'tree' => [],
+                'titles' => [],
+            ];
+        }
+        $xpath = new \DOMXPath($this->document);
+        return [
+            'tree' => $this->parsePagesTree($xpath, $divElement),
+            'titles' => $this->pageTitles,
+        ];
+    }
+
+    public function parsePagesTree(\DOMXPath $xpath, \DOMElement $parentElement)
+    {
+        $liElements = $xpath->query('ul/li', $parentElement);
+        if ($liElements->count() == 0) {
+            return [];
         }
 
-        $xpath = new \DOMXPath($document);
-        $firstLevelLiElements = $xpath->query('ul/li', $divElement);
-        if ($firstLevelLiElements->count() == 0) {
-            return $pages;
+        $tree = [];
+        foreach ($liElements as $liElement) {
+            $aElement = $xpath->query('a', $liElement)->item(0);
+            $href = $aElement->getAttribute('href');
+            $this->pageTitles[$href] = $aElement->nodeValue;
+            $tree[$href] = $this->parsePagesTree($xpath, $liElement);
         }
-
-        foreach ($firstLevelLiElements as $firstLevelLiElement) {
-            $aElement = $xpath->query('a', $firstLevelLiElement)->item(0);
-            $pages['tree'][] = $aElement->getAttribute('href');
-            $pages['titles'][$aElement->getAttribute('href')] = $aElement->nodeValue;
-        }
-        return $pages;
+        return $tree;
     }
 }
