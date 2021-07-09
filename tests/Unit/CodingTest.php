@@ -119,17 +119,6 @@ class CodingTest extends TestCase
         $this->assertEquals('attachments/65619/65623.png', $zip->getNameIndex(2));
     }
 
-    public function testUpload()
-    {
-        $file = $this->faker->filePath();
-        Storage::fake('cos');
-
-        $coding = new Coding();
-        $coding->upload(self::$uploadToken, $file);
-
-        Storage::disk('cos')->assertExists(self::$uploadToken['StorageKey']);
-    }
-
     public function testGetImportJobStatus()
     {
         $responseBody = file_get_contents($this->dataDir . 'coding/DescribeImportJobStatusResponse.json');
@@ -189,7 +178,7 @@ class CodingTest extends TestCase
                         'ProjectName' => $codingProjectUri,
                         'ParentIid' => $data['ParentIid'],
                         'FileName' => $data['FileName'],
-                        'Key' => $data['FileName'],
+                        'Key' => self::$uploadToken['StorageKey'],
                         'Time' => self::$uploadToken['Time'],
                         'AuthToken' => self::$uploadToken['AuthToken'],
                     ],
