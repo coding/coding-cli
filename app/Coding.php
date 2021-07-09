@@ -145,15 +145,15 @@ class Coding
             ],
         ]);
         $result = json_decode($response->getBody(), true);
-        if (isset($result['Response']['Data']['Status'])) {
-            return $result['Response']['Data']['Status'];
+        if (isset($result['Response']['Data'])) {
+            return $result['Response']['Data'];
         } else {
             // TODO exception message
             return new \Exception('failed');
         }
     }
 
-    public function createWikiByUploadZip(string $token, string $projectName, string $zipFileFullPath)
+    public function createWikiByUploadZip(string $token, string $projectName, string $zipFileFullPath, int $parentId)
     {
         $zipFilename = basename($zipFileFullPath);
         $uploadToken = $this->createUploadToken(
@@ -163,7 +163,7 @@ class Coding
         );
         $this->upload($uploadToken, $zipFileFullPath);
         return $this->createWikiByZip($token, $projectName, $uploadToken, [
-            'ParentIid' => 0,
+            'ParentIid' => $parentId,
             'FileName' => $zipFilename,
         ]);
     }

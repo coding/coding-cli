@@ -180,7 +180,7 @@ class WikiImportCommand extends Command
         return 0;
     }
 
-    private function uploadConfluencePages(string $dataPath, array $tree, array $titles): void
+    private function uploadConfluencePages(string $dataPath, array $tree, array $titles, int $parentId = 0): void
     {
         foreach ($tree as $page => $subPages) {
             $this->info('标题：' . $titles[$page]);
@@ -190,13 +190,35 @@ class WikiImportCommand extends Command
             $result = $this->coding->createWikiByUploadZip(
                 $this->codingToken,
                 $this->codingProjectUri,
-                $zipFilePath
+                $zipFilePath,
+                $parentId,
             );
             $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
-            // TODO 指定 parent
+            $wikiId = null;
+            $waiting_times = 0;
+            while (true) {
+                $jobStatus = $this->coding->getImportJobStatus(
+                    $this->codingToken,
+                    $this->codingProjectUri,
+                    $result['JobId']
+                );
+                if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waiting_times < 10) {
+                    $waiting_times++;
+                    sleep(1);
+                    continue;
+                }
+                if ($jobStatus['Status'] == 'success') {
+                    $wikiId = intval($jobStatus['Iids'][0]);
+                }
+                break;
+            }
+            if (empty($wikiId)) {
+                $this->warn('导入失败，跳过');
+                continue;
+            }
             if (!empty($subPages)) {
                 $this->info('发现 ' . count($subPages) . ' 个子页面');
-                $this->uploadConfluencePages($dataPath, $subPages, $titles);
+                $this->uploadConfluencePages($dataPath, $subPages, $titles, $parentId);
             }
         }
     }
