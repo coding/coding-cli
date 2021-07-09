@@ -158,7 +158,7 @@ class WikiImportCommandTest extends TestCase
         $mock = \Mockery::mock(Coding::class, [])->makePartial();
         $this->instance(Coding::class, $mock);
 
-        $mock->shouldReceive('createWikiByUploadZip')->times(2)->andReturn(json_decode(
+        $mock->shouldReceive('createWikiByUploadZip')->times(4)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
             true
         )['Response']);
@@ -174,6 +174,11 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('标题：Image Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->expectsOutput('标题：你好世界')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('发现 2 个子页面')
+            ->expectsOutput('标题：Attachment Demo')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('标题：Text Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
     }
