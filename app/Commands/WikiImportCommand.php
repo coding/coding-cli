@@ -160,36 +160,17 @@ class WikiImportCommand extends Command
             $this->info('空间名称：' . $space['name']);
             $this->info('空间标识：' . $space['key']);
 
-            $divElements = $this->document->getElementById('content')->getElementsByTagName('div');
-            $divElement = null;
-            foreach ($divElements as $divElement) {
-                if ($divElement->getAttribute('class') != 'pageSection') {
-                    continue;
-                }
-                $h2Element = $divElement->getElementsByTagName('h2')[0];
-                if (!empty($h2Element) && $h2Element->nodeValue == 'Available Pages:') {
-                    break;
-                }
-            }
-            if (empty($divElement)) {
+            $pages = $this->confluence->parseAvailablePages($this->document);
+            if (empty($pages['tree'])) {
                 $this->info("未发现有效数据");
                 return 0;
-            }
-            $xpath = new \DOMXPath($this->document);
-            $firstLevelLiElements = $xpath->query('ul/li', $divElement);
-            $this->info("发现 {$firstLevelLiElements->count()} 个一级页面");
-            if ($firstLevelLiElements->count() == 0) {
-                return 0;
+            } else {
+                $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             }
 
             $this->info("开始导入 CODING：");
-            $pageTitles = [];
-            foreach ($firstLevelLiElements as $firstLevelLiElement) {
-                $aElement = $xpath->query('a', $firstLevelLiElement)->item(0);
-                $pageTitles[$aElement->getAttribute('href')] = $aElement->nodeValue;
-            }
-            foreach ($pageTitles as $page => $title) {
-                $this->info('标题：' . $title);
+            foreach ($pages['tree'] as $page) {
+                $this->info('标题：' . $pages['titles'][$page]);
                 $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
                 $mdFilename = substr($page, 0, -5) . '.md';
                 $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
