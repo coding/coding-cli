@@ -33,13 +33,46 @@ class Confluence
         ];
     }
 
-    public function htmlFile2Markdown(string $filename)
+    public function htmlFile2Markdown(string $filename): string
     {
         libxml_use_internal_errors(true);
         $this->document->loadHTMLFile($filename);
 
         $html = $this->document->saveHTML($this->document->getElementById('main-content'));
         return $this->htmlConverter->convert($html);
+    }
+
+    /**
+     * parse attachments. if markdown is not empty, ignore images in it.
+     */
+    public function parseAttachments($htmlFilename, $markdownContent = ''): array
+    {
+        libxml_use_internal_errors(true);
+        $this->document->loadHTMLFile($htmlFilename);
+        $divElements = $this->document->getElementById('content')->getElementsByTagName('div');
+        $divElement = null;
+        foreach ($divElements as $divElement) {
+            if ($divElement->getAttribute('class') != 'pageSection') {
+                continue;
+            }
+            $h2Element = $divElement->getElementsByTagName('h2')[0];
+            if (!empty($h2Element) && $h2Element->id == 'attachments') {
+                break;
+            }
+        }
+        if (empty($divElement)) {
+            return [];
+        }
+        $aElements = $divElement->getElementsByTagName('a');
+        $attachments = [];
+        foreach ($aElements as $aElement) {
+            $filePath = $aElement->getAttribute('href');
+            $filename = $aElement->nodeValue;
+            if (!str_contains($markdownContent, "![](${filePath}")) {
+                $attachments[$filePath] = $filename;
+            }
+        }
+        return $attachments;
     }
 
     /**
