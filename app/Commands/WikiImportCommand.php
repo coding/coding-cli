@@ -197,6 +197,8 @@ class WikiImportCommand extends Command
             $wikiId = null;
             $waiting_times = 0;
             while (true) {
+                // HACK 如果上传成功立即查询，会报错：invoke function
+                sleep(1);
                 $jobStatus = $this->coding->getImportJobStatus(
                     $this->codingToken,
                     $this->codingProjectUri,
@@ -204,7 +206,6 @@ class WikiImportCommand extends Command
                 );
                 if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waiting_times < 10) {
                     $waiting_times++;
-                    sleep(1);
                     continue;
                 }
                 if ($jobStatus['Status'] == 'success') {
@@ -218,7 +219,8 @@ class WikiImportCommand extends Command
             }
             if (!empty($subPages)) {
                 $this->info('发现 ' . count($subPages) . ' 个子页面');
-                $this->uploadConfluencePages($dataPath, $subPages, $titles, $parentId);
+                // TODO tests
+                $this->uploadConfluencePages($dataPath, $subPages, $titles, $wikiId);
             }
         }
     }
