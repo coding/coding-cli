@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Coding;
 use Confluence\Content;
+use DOMDocument;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
@@ -37,22 +38,21 @@ class WikiImportCommand extends Command
     protected $description = '从 Confluence 导入 Wiki';
 
     private \App\Confluence $confluence;
-    private \DOMDocument $document;
+    private DOMDocument $document;
 
     /**
      * Execute the console command.
      *
      */
-    public function handle(Coding $coding, \App\Confluence $confluence, \DOMDocument $document): int
+    public function handle(Coding $coding, \App\Confluence $confluence, DOMDocument $document): int
     {
         $this->coding = $coding;
         $this->confluence = $confluence;
         $this->document = $document;
         $this->setCodingApi();
 
-        if ($this->option('coding_import_provider')) {
-            $provider = $this->option('coding_import_provider');
-        } else {
+        $provider = $this->option('coding_import_provider');
+        if (is_null($provider)) {
             $provider = config('coding.import.provider') ?? $this->choice(
                 '数据来源？',
                 ['Confluence', 'MediaWiki'],
@@ -64,9 +64,8 @@ class WikiImportCommand extends Command
             return 1;
         }
 
-        if ($this->option('coding_import_data_type')) {
-            $dataType = $this->option('coding_import_data_type');
-        } else {
+        $dataType = $this->option('coding_import_data_type');
+        if (is_null($dataType)) {
             $dataType = config('coding.import.data_type') ?? $this->choice(
                 '数据类型？',
                 ['HTML', 'API'],
@@ -92,9 +91,8 @@ class WikiImportCommand extends Command
 
     private function handleConfluenceApi(): int
     {
-        if ($this->option('confluence_base_uri')) {
-            $baseUri = $this->option('confluence_base_uri');
-        } else {
+        $baseUri = $this->option('confluence_base_uri');
+        if (is_null($baseUri)) {
             $baseUri = config('confluence.base_uri') ?? $this->ask(
                 'Confluence API 链接：',
                 'http://localhost:8090/rest/api/'
@@ -102,14 +100,12 @@ class WikiImportCommand extends Command
         }
         config(['confluence.base_uri' => $baseUri]);
 
-        if ($this->option('confluence_username')) {
-            $username = $this->option('confluence_username');
-        } else {
+        $username = $this->option('confluence_username');
+        if (is_null($username)) {
             $username = config('confluence.username') ?? $this->ask('Confluence 账号：', 'admin');
         }
-        if ($this->option('confluence_password')) {
-            $password = $this->option('confluence_password');
-        } else {
+        $password = $this->option('confluence_password');
+        if (is_null($password)) {
             $password = config('confluence.password') ?? $this->ask('Confluence 密码：', '123456');
         }
         config(['confluence.auth' => [$username, $password]]);
@@ -133,9 +129,8 @@ class WikiImportCommand extends Command
 
     private function handleConfluenceHtml(): int
     {
-        if ($this->option('coding_import_data_path')) {
-            $dataPath = $this->option('coding_import_data_path');
-        } else {
+        $dataPath = $this->option('coding_import_data_path');
+        if (is_null($dataPath)) {
             $dataPath = config('coding.import.data_path') ?? trim($this->ask(
                 '空间导出的 HTML 目录',
                 './confluence/space1/'
@@ -167,9 +162,8 @@ class WikiImportCommand extends Command
             if (empty($pages['tree'])) {
                 $this->info("未发现有效数据");
                 return 0;
-            } else {
-                $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             }
+            $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             $this->info("开始导入 CODING：");
             $this->uploadConfluencePages($dataPath, $pages['tree'], $pages['titles']);
         } catch (\ErrorException $e) {
@@ -196,7 +190,7 @@ class WikiImportCommand extends Command
             );
             $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
             $wikiId = null;
-            $waiting_times = 0;
+            $waitingTimes = 0;
             while (true) {
                 // HACK 如果上传成功立即查询，会报错：invoke function
                 sleep(1);
@@ -205,8 +199,8 @@ class WikiImportCommand extends Command
                     $this->codingProjectUri,
                     $result['JobId']
                 );
-                if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waiting_times < 10) {
-                    $waiting_times++;
+                if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waitingTimes < 10) {
+                    $waitingTimes++;
                     continue;
                 }
                 if ($jobStatus['Status'] == 'success') {

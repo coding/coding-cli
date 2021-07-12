@@ -27,6 +27,11 @@ jobs:
         with:
           args: ./vendor/bin/phpcs --extensions=php --standard=PSR12 app/ tests/
 
+      - name: PHPMD
+        uses: docker://ecoding/php:8.0
+        with:
+          args: ./vendor/bin/phpmd . text phpmd.xml --exclude vendor
+
       - name: test
         uses: docker://ecoding/php:8.0
         env:

@@ -1,6 +1,7 @@
 #!/bin/sh
 
-FILES=$(git diff --diff-filter=d --name-only HEAD)
-if [ -n "$FILES" ]; then
-  echo "$FILES" | xargs ./vendor/bin/phpcs --extensions=php --standard=PSR12
-fi
+FILES=$(git diff --diff-filter=d --name-only HEAD | grep '.php$')
+for file in $FILES; do
+  ./vendor/bin/phpcs --extensions=php --standard=PSR12 "$file"
+  ./vendor/bin/phpmd "$file" text phpmd.xml --exclude vendor
+done

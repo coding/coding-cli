@@ -10,12 +10,12 @@ use Tests\TestCase;
 
 class WikiImportCommandTest extends TestCase
 {
-    private array $codingCreateWikiResponse;
+    private array $createWikiResponse;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->codingCreateWikiResponse = json_decode(
+        $this->createWikiResponse = json_decode(
             file_get_contents($this->dataDir . 'coding/createWikiResponse.json'),
             true
         )['Response']['Data'];
@@ -93,7 +93,7 @@ class WikiImportCommandTest extends TestCase
         });
         Confluence::setResource($mock);
 
-        $codingResponse = $this->codingCreateWikiResponse;
+        $codingResponse = $this->createWikiResponse;
         $this->mock(Coding::class, function (MockInterface $mock) use (
             $codingToken,
             $codingProjectUri,

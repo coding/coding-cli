@@ -2,21 +2,23 @@
 
 namespace App;
 
+use Exception;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use ZipArchive;
 
 class Coding
 {
     private Client $client;
-    private \ZipArchive $zipArchive;
+    private ZipArchive $zipArchive;
 
-    public function __construct(Client $client = null, \ZipArchive $zipArchive = null)
+    public function __construct(Client $client = null, ZipArchive $zipArchive = null)
     {
         $this->client = $client ?? new Client();
-        $this->zipArchive = $zipArchive ?? new \ZipArchive();
+        $this->zipArchive = $zipArchive ?? new ZipArchive();
     }
 
     public function createWiki($token, $projectName, $data)
@@ -64,7 +66,7 @@ class Coding
     public function createMarkdownZip($markdown, $path, $markdownFilename): bool|string
     {
         $zipFileFullPath = sys_get_temp_dir() . '/' . $markdownFilename . '-' . Str::uuid() . '.zip';
-        if ($this->zipArchive->open($zipFileFullPath, \ZipArchive::CREATE) !== true) {
+        if ($this->zipArchive->open($zipFileFullPath, ZipArchive::CREATE) !== true) {
             Log::error("cannot open <$zipFileFullPath>");
             return false;
         }
@@ -114,11 +116,10 @@ class Coding
             ],
         ]);
         $result = json_decode($response->getBody(), true);
-        if (isset($result['Response']['JobId'])) {
-            return $result['Response'];
-        } else {
-            return new \Exception('createWikiByZip failed');
+        if (!isset($result['Response']['JobId'])) {
+            return new Exception('failed');
         }
+        return $result['Response'];
     }
 
     /**
@@ -145,12 +146,7 @@ class Coding
             ],
         ]);
         $result = json_decode($response->getBody(), true);
-        if (isset($result['Response']['Data'])) {
-            return $result['Response']['Data'];
-        } else {
-            // TODO exception message
-            return new \Exception('failed');
-        }
+        return $result['Response']['Data'];
     }
 
     public function createWikiByUploadZip(string $token, string $projectName, string $zipFileFullPath, int $parentId)
@@ -187,7 +183,7 @@ class Coding
         return $result['Response']['Data'];
     }
 
-    public function updateWikiTitle(string $token, string $projectName, int $id, string $title)
+    public function updateWikiTitle(string $token, string $projectName, int $id, string $title): bool
     {
         $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
             'headers' => [

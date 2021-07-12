@@ -2,19 +2,19 @@
 
 namespace App;
 
-use JetBrains\PhpStorm\ArrayShape;
+use DOMDocument;
+use DOMXPath;
 use League\HTMLToMarkdown\HtmlConverter;
-use phpDocumentor\Reflection\Types\Array_;
 
 class Confluence
 {
-    private \DOMDocument $document;
+    private DOMDocument $document;
     private HtmlConverter $htmlConverter;
     private array $pageTitles;
 
-    public function __construct(\DOMDocument $document = null, HtmlConverter $htmlConverter = null)
+    public function __construct(DOMDocument $document = null, HtmlConverter $htmlConverter = null)
     {
-        $this->document = $document ?? new \DOMDocument();
+        $this->document = $document ?? new DOMDocument();
         $this->htmlConverter = $htmlConverter ?? new HtmlConverter();
         $this->htmlConverter->getConfig()->setOption('strip_tags', true);
     }
@@ -65,14 +65,14 @@ class Confluence
                 'titles' => [],
             ];
         }
-        $xpath = new \DOMXPath($this->document);
+        $xpath = new DOMXPath($this->document);
         return [
             'tree' => $this->parsePagesTree($xpath, $divElement),
             'titles' => $this->pageTitles,
         ];
     }
 
-    public function parsePagesTree(\DOMXPath $xpath, \DOMElement $parentElement)
+    public function parsePagesTree(DOMXPath $xpath, \DOMElement $parentElement)
     {
         $liElements = $xpath->query('ul/li', $parentElement);
         if ($liElements->count() == 0) {
