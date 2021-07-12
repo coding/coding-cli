@@ -72,7 +72,10 @@ class Coding
         preg_match_all('/!\[\]\((.+)\)/', $markdown, $matches);
         if (!empty($matches)) {
             foreach ($matches[1] as $attachment) {
-                $this->zipArchive->addFile($path . $attachment, $attachment);
+                // markdown image title: ![](images/default.svg "admin")
+                $tmp = explode(' ', $attachment);
+                $filename = $tmp[0];
+                $this->zipArchive->addFile($path . $filename, $filename);
             }
         }
         $this->zipArchive->close();
