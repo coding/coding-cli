@@ -241,4 +241,38 @@ class CodingTest extends TestCase
         $result = $coding->getWiki($codingToken, $codingProjectUri, $id, $version);
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
+
+    public function testUpdateWikiTitle()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/ModifyWikiTitleResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $id = $this->faker->randomNumber();
+        $title = 'new title';
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'ModifyWikiTitle',
+                        'ProjectName' => $codingProjectUri,
+                        'Iid' => $id,
+                        'Title' => $title,
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->updateWikiTitle($codingToken, $codingProjectUri, $id, $title);
+        $this->assertTrue($result);
+    }
 }

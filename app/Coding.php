@@ -186,4 +186,23 @@ class Coding
         $result = json_decode($response->getBody(), true);
         return $result['Response']['Data'];
     }
+
+    public function updateWikiTitle(string $token, string $projectName, int $id, string $title)
+    {
+        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
+            'headers' => [
+                'Accept' => 'application/json',
+                'Authorization' => "token ${token}",
+                'Content-Type' => 'application/json'
+            ],
+            'json' => [
+                'Action' => 'ModifyWikiTitle',
+                'ProjectName' => $projectName,
+                'Iid' => $id,
+                'Title' => $title,
+            ],
+        ]);
+        $result = json_decode($response->getBody(), true);
+        return $result['Response']['Data']['Title'] == $title;
+    }
 }

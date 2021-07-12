@@ -166,6 +166,7 @@ class WikiImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
             true
         )['Response']['Data']);
+        $mock->shouldReceive('updateWikiTitle')->times(4)->andReturn(true);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
