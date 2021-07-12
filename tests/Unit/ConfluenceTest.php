@@ -67,4 +67,35 @@ class ConfluenceTest extends TestCase
             ]
         ], $tree);
     }
+
+    public function testParseAttachmentsIgnoreImages()
+    {
+        $confluence = new Confluence();
+        $htmlFilePath = $this->dataDir . 'confluence/space1/image-demo_65619.html';
+        $markdown = $confluence->htmlFile2Markdown($htmlFilePath);
+        $attachments = $confluence->parseAttachments($htmlFilePath, $markdown);
+        $this->assertEquals([], $attachments);
+    }
+
+    public function testParseAttachmentsNoIgnoreImages()
+    {
+        $confluence = new Confluence();
+        $htmlFilePath = $this->dataDir . 'confluence/space1/image-demo_65619.html';
+        $attachments = $confluence->parseAttachments($htmlFilePath);
+        $this->assertEquals([
+            'attachments/65619/65623.png' => 'github-ubuntu-16.04.png',
+            'attachments/65619/65624.png' => 'coding-logo.png',
+        ], $attachments);
+    }
+
+    public function testParseAttachmentsSuccess()
+    {
+        $confluence = new Confluence();
+        $htmlFilePath = $this->dataDir . 'confluence/space1/attachment-demo_65615.html';
+        $markdown = $confluence->htmlFile2Markdown($htmlFilePath);
+        $attachments = $confluence->parseAttachments($htmlFilePath, $markdown);
+        $this->assertEquals([
+            'attachments/65615/65616.txt' => 'Lorem Ipsum 2021-06-08T10_55_27+0800.txt'
+        ], $attachments);
+    }
 }
