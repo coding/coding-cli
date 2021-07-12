@@ -183,7 +183,8 @@ class WikiImportCommand extends Command
     private function uploadConfluencePages(string $dataPath, array $tree, array $titles, int $parentId = 0): void
     {
         foreach ($tree as $page => $subPages) {
-            $this->info('标题：' . $titles[$page]);
+            $title = $titles[$page];
+            $this->info('标题：' . $title);
             $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
             $mdFilename = substr($page, 0, -5) . '.md';
             $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
@@ -210,6 +211,7 @@ class WikiImportCommand extends Command
                 }
                 if ($jobStatus['Status'] == 'success') {
                     $wikiId = intval($jobStatus['Iids'][0]);
+                    $this->coding->updateWikiTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
                 }
                 break;
             }
