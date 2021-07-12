@@ -1,0 +1,52 @@
+{
+  "Response" : {
+    "Data" : {
+      "CanMaintain" : true,
+      "CanRead" : true,
+      "Content" : "foo foo",
+      "CreatedAt" : 1626070084000,
+      "Creator" : {
+        "Avatar" : "https://coding-net-production-static-ci.codehub.cn/2cb665a3-bebc-4b09-aa00-2b6df3e33edc.jpg?imageMogr2/auto-orient/format/jpeg/cut/400x400x0x0",
+        "Email" : "",
+        "GlobalKey" : "KMRnIKgzbV",
+        "Id" : 183478,
+        "Name" : "sinkcup",
+        "Phone" : "",
+        "RequestId" : "",
+        "Status" : "ACTIVE",
+        "TeamId" : 0
+      },
+      "CreatorId" : 0,
+      "CurrentUserRoleId" : 0,
+      "CurrentVersion" : 1,
+      "Editor" : {
+        "Avatar" : "https://coding-net-production-static-ci.codehub.cn/2cb665a3-bebc-4b09-aa00-2b6df3e33edc.jpg?imageMogr2/auto-orient/format/jpeg/cut/400x400x0x0",
+        "Email" : "",
+        "GlobalKey" : "KMRnIKgzbV",
+        "Id" : 183478,
+        "Name" : "sinkcup",
+        "Phone" : "",
+        "RequestId" : "",
+        "Status" : "ACTIVE",
+        "TeamId" : 0
+      },
+      "EditorId" : 0,
+      "HistoriesCount" : 1,
+      "HistoryId" : 2755733,
+      "Html" : "<p>foo foo</p>",
+      "Id" : 1362209,
+      "Iid" : 148,
+      "LastVersion" : 1,
+      "Msg" : "",
+      "Order" : 120,
+      "ParentIid" : 0,
+      "ParentShared" : false,
+      "ParentVisibleRange" : "PUBLIC",
+      "Path" : "148",
+      "Title" : "foo by curl",
+      "UpdatedAt" : 1626070084000,
+      "VisibleRange" : "INHERIT"
+    },
+    "RequestId" : "555fd71a-8719-f74f-49b2-097726e5ebe9"
+  }
+}

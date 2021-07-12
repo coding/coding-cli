@@ -29,7 +29,7 @@ class CodingTest extends TestCase
         parent::setUp();
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
-        $codingTeamDomain =  $this->faker->domainWord;
+        $codingTeamDomain = $this->faker->domainWord;
         config(['coding.team_domain' => $codingTeamDomain]);
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
@@ -206,5 +206,39 @@ class CodingTest extends TestCase
         $filePath = $this->faker->filePath();
         $result = $mock->createWikiByUploadZip('token', 'project', $filePath, $this->faker->randomNumber());
         $this->assertArrayHasKey('JobId', $result);
+    }
+
+    public function testGetWiki()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/DescribeWikiResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $id = $this->faker->randomNumber();
+        $version = $this->faker->randomNumber();
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'DescribeWiki',
+                        'ProjectName' => $codingProjectUri,
+                        'Iid' => $id,
+                        'VersionId' => $version,
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->getWiki($codingToken, $codingProjectUri, $id, $version);
+        $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
 }
