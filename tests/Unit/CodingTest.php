@@ -7,6 +7,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
+use ZipArchive;
 
 class CodingTest extends TestCase
 {
@@ -111,7 +112,7 @@ class CodingTest extends TestCase
         $zipFile = $coding->createMarkdownZip($markdown, $path, $filename);
 
         $this->assertTrue(file_exists($zipFile));
-        $zip = new \ZipArchive();
+        $zip = new ZipArchive();
         $zip->open($zipFile);
         $this->assertEquals(3, $zip->numFiles);
         $this->assertEquals('image-demo_65619.md', $zip->getNameIndex(0));

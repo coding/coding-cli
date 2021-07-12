@@ -3,6 +3,8 @@
 namespace Tests\Unit;
 
 use App\Confluence;
+use DOMDocument;
+use DOMXPath;
 use Tests\TestCase;
 
 class ConfluenceTest extends TestCase
@@ -26,7 +28,7 @@ class ConfluenceTest extends TestCase
 
     public function testParsePagesTree()
     {
-        $document = new \DOMDocument();
+        $document = new DOMDocument();
         $document->loadHTML('<div id="foo">
             <ul>
                 <li>
@@ -52,7 +54,7 @@ class ConfluenceTest extends TestCase
                 </li>
             </ul>
         </div>');
-        $xpath = new \DOMXPath($document);
+        $xpath = new DOMXPath($document);
         $confluence = new Confluence();
         $tree = $confluence->parsePagesTree($xpath, $document->getElementById('foo'));
         $this->assertEquals([
