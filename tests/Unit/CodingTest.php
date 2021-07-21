@@ -276,4 +276,41 @@ class CodingTest extends TestCase
         $result = $coding->updateWikiTitle($codingToken, $codingProjectUri, $id, $title);
         $this->assertTrue($result);
     }
+
+    public function testCreateFolder()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/CreateFolderResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $folderName = 'foo';
+        $parentId = $this->faker->randomNumber();
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->exactly(2))
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => [
+                        'Action' => 'CreateFolder',
+                        'ProjectName' => $codingProjectUri,
+                        'FolderName' => $folderName,
+                        'ParentId' => $parentId,
+                    ],
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->createFolder($codingToken, $codingProjectUri, $folderName, $parentId);
+        $this->assertTrue(is_numeric($result));
+
+        $result = $coding->createFolder($codingToken, $codingProjectUri, $folderName, $parentId);
+        $this->assertTrue(is_numeric($result));
+    }
 }
