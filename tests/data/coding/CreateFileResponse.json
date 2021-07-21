@@ -1,0 +1,10 @@
+{
+  "Response" : {
+    "Data" : {
+      "FileId": 123,
+      "ResourceCode": 456,
+      "FileName": "foo.pdf"
+    },
+    "RequestId" : "b43bdea4-0602-4266-e451-dfcc671c91f9"
+  }
+}
