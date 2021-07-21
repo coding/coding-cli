@@ -313,4 +313,43 @@ class CodingTest extends TestCase
         $result = $coding->createFolder($codingToken, $codingProjectUri, $folderName, $parentId);
         $this->assertTrue(is_numeric($result));
     }
+
+    public function testCreateFile()
+    {
+        $responseBody = file_get_contents($this->dataDir . 'coding/CreateFileResponse.json');
+        $codingToken = $this->faker->md5;
+        $codingProjectUri = $this->faker->slug;
+        $data = [
+            "OriginalFileName" => "foo.pdf",
+            "MimeType" => "application/pdf",
+            "FileSize" => 123456,
+            "StorageKey" => "b5d0d8e0-3aca-11eb-8673-a9b6d94ca755.pdf",
+            "Time" => 1625579588693,
+            "AuthToken" => "65e5968b5e17d5aaa3f5d33200aca2d1911fe2ad2948b47d899d46e6da1e4",
+            "FolderId" => 24515861,
+        ];
+
+        $clientMock = $this->getMockBuilder(Client::class)->getMock();
+        $clientMock->expects($this->once())
+            ->method('request')
+            ->with(
+                'POST',
+                'https://e.coding.net/open-api',
+                [
+                    'headers' => [
+                        'Accept' => 'application/json',
+                        'Authorization' => "token ${codingToken}",
+                        'Content-Type' => 'application/json'
+                    ],
+                    'json' => array_merge([
+                        'Action' => 'CreateFile',
+                        'ProjectName' => $codingProjectUri,
+                    ], $data)
+                ]
+            )
+            ->willReturn(new Response(200, [], $responseBody));
+        $coding = new Coding($clientMock);
+        $result = $coding->createFile($codingToken, $codingProjectUri, $data);
+        $this->assertArrayHasKey('FileId', $result);
+    }
 }
