@@ -50,20 +50,21 @@ class Confluence
         libxml_use_internal_errors(true);
         $this->document->loadHTMLFile($htmlFilename);
         $divElements = $this->document->getElementById('content')->getElementsByTagName('div');
-        $divElement = null;
+        $attachmentDivElement = null;
         foreach ($divElements as $divElement) {
-            if ($divElement->getAttribute('class') != 'pageSection') {
+            if ($divElement->getAttribute('class') != 'pageSection group') {
                 continue;
             }
             $h2Element = $divElement->getElementsByTagName('h2')[0];
-            if (!empty($h2Element) && $h2Element->id == 'attachments') {
+            if (!empty($h2Element) && $h2Element->getAttribute('id') == 'attachments') {
+                $attachmentDivElement = $divElement;
                 break;
             }
         }
-        if (empty($divElement)) {
+        if (empty($attachmentDivElement)) {
             return [];
         }
-        $aElements = $divElement->getElementsByTagName('a');
+        $aElements = $attachmentDivElement->getElementsByTagName('a');
         $attachments = [];
         foreach ($aElements as $aElement) {
             $filePath = $aElement->getAttribute('href');

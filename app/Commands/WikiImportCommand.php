@@ -3,8 +3,11 @@
 namespace App\Commands;
 
 use App\Coding;
+use App\Coding\Disk;
+use App\Coding\Wiki;
 use Confluence\Content;
 use DOMDocument;
+use Exception;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
@@ -13,6 +16,8 @@ class WikiImportCommand extends Command
 {
     use WithCoding;
 
+    protected Disk $codingDisk;
+    protected Wiki $codingWiki;
     /**
      * The signature of the command.
      *
@@ -44,9 +49,10 @@ class WikiImportCommand extends Command
      * Execute the console command.
      *
      */
-    public function handle(Coding $coding, \App\Confluence $confluence, DOMDocument $document): int
+    public function handle(Disk $codingDisk, Wiki $codingWiki, \App\Confluence $confluence, DOMDocument $document): int
     {
-        $this->coding = $coding;
+        $this->codingDisk = $codingDisk;
+        $this->codingWiki = $codingWiki;
         $this->confluence = $confluence;
         $this->document = $document;
         $this->setCodingApi();
@@ -84,7 +90,7 @@ class WikiImportCommand extends Command
 
     private function createWiki($data)
     {
-        $result = $this->coding->createWiki($this->codingToken, $this->codingProjectUri, $data);
+        $result = $this->codingWiki->createWiki($this->codingToken, $this->codingProjectUri, $data);
         $path = $result['Path'];
         $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}/wiki/${path}");
     }
@@ -180,9 +186,17 @@ class WikiImportCommand extends Command
             $title = $titles[$page];
             $this->info('标题：' . $title);
             $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
+            $attachments = $this->confluence->parseAttachments($dataPath . $page, $markdown);
+            $codingAttachments = $this->codingDisk->uploadAttachments(
+                $this->codingToken,
+                $this->codingProjectUri,
+                $dataPath,
+                $attachments
+            );
+            $markdown = $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
             $mdFilename = substr($page, 0, -5) . '.md';
-            $zipFilePath = $this->coding->createMarkdownZip($markdown, $dataPath, $mdFilename);
-            $result = $this->coding->createWikiByUploadZip(
+            $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $dataPath, $mdFilename);
+            $result = $this->codingWiki->createWikiByUploadZip(
                 $this->codingToken,
                 $this->codingProjectUri,
                 $zipFilePath,
@@ -194,18 +208,23 @@ class WikiImportCommand extends Command
             while (true) {
                 // HACK 如果上传成功立即查询，会报错：invoke function
                 sleep(1);
-                $jobStatus = $this->coding->getImportJobStatus(
-                    $this->codingToken,
-                    $this->codingProjectUri,
-                    $result['JobId']
-                );
+                try {
+                    $jobStatus = $this->codingWiki->getImportJobStatus(
+                        $this->codingToken,
+                        $this->codingProjectUri,
+                        $result['JobId']
+                    );
+                } catch (Exception $e) {
+                    $waitingTimes++;
+                    continue;
+                }
                 if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waitingTimes < 10) {
                     $waitingTimes++;
                     continue;
                 }
                 if ($jobStatus['Status'] == 'success') {
                     $wikiId = intval($jobStatus['Iids'][0]);
-                    $this->coding->updateWikiTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
+                    $this->codingWiki->updateWikiTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
                 }
                 break;
             }

@@ -2,14 +2,14 @@
 
 namespace Tests\Unit;
 
-use App\Coding;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use ZipArchive;
+use App\Coding\Wiki;
 
-class CodingTest extends TestCase
+class CodingWikiTest extends TestCase
 {
     public static array $uploadToken = [
         'AuthToken' => '65e5968b5e17d5aaa3f5d33200aca2d1911fe2ad2948b47d899d46e6da1e4',
@@ -66,7 +66,7 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->createWiki($codingToken, $codingProjectUri, $article);
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
@@ -98,7 +98,7 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->createUploadToken($codingToken, $codingProjectUri, $fileName);
         $this->assertEquals(self::$uploadToken, $result);
     }
@@ -108,7 +108,7 @@ class CodingTest extends TestCase
         $path = $this->dataDir . 'confluence/space1/';
         $filename = 'image-demo_65619.md';
         $markdown = file_get_contents($path . $filename);
-        $coding = new Coding();
+        $coding = new Wiki();
         $zipFile = $coding->createMarkdownZip($markdown, $path, $filename);
 
         $this->assertTrue(file_exists($zipFile));
@@ -147,7 +147,7 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->getImportJobStatus($codingToken, $codingProjectUri, $jobId);
         $this->assertEquals('success', $result['Status']);
         $this->assertEquals([27], $result['Iids']);
@@ -187,17 +187,17 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->createWikiByZip($codingToken, $codingProjectUri, self::$uploadToken, $data);
         $this->assertArrayHasKey('JobId', $result);
     }
 
     public function testCreateWikiByUploadZip()
     {
-        $mock = \Mockery::mock(Coding::class, [])->makePartial();
-        $this->instance(Coding::class, $mock);
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
 
-        $mock->shouldReceive('createUploadToken')->times(1)->andReturn(CodingTest::$uploadToken);
+        $mock->shouldReceive('createUploadToken')->times(1)->andReturn(CodingWikiTest::$uploadToken);
         $mock->shouldReceive('upload')->times(1)->andReturn(true);
         $mock->shouldReceive('createWikiByZip')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
@@ -238,7 +238,7 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->getWiki($codingToken, $codingProjectUri, $id, $version);
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
@@ -272,84 +272,8 @@ class CodingTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
+        $coding = new Wiki($clientMock);
         $result = $coding->updateWikiTitle($codingToken, $codingProjectUri, $id, $title);
         $this->assertTrue($result);
-    }
-
-    public function testCreateFolder()
-    {
-        $responseBody = file_get_contents($this->dataDir . 'coding/CreateFolderResponse.json');
-        $codingToken = $this->faker->md5;
-        $codingProjectUri = $this->faker->slug;
-        $folderName = 'foo';
-        $parentId = $this->faker->randomNumber();
-
-        $clientMock = $this->getMockBuilder(Client::class)->getMock();
-        $clientMock->expects($this->exactly(2))
-            ->method('request')
-            ->with(
-                'POST',
-                'https://e.coding.net/open-api',
-                [
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Authorization' => "token ${codingToken}",
-                        'Content-Type' => 'application/json'
-                    ],
-                    'json' => [
-                        'Action' => 'CreateFolder',
-                        'ProjectName' => $codingProjectUri,
-                        'FolderName' => $folderName,
-                        'ParentId' => $parentId,
-                    ],
-                ]
-            )
-            ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
-        $result = $coding->createFolder($codingToken, $codingProjectUri, $folderName, $parentId);
-        $this->assertTrue(is_numeric($result));
-
-        $result = $coding->createFolder($codingToken, $codingProjectUri, $folderName, $parentId);
-        $this->assertTrue(is_numeric($result));
-    }
-
-    public function testCreateFile()
-    {
-        $responseBody = file_get_contents($this->dataDir . 'coding/CreateFileResponse.json');
-        $codingToken = $this->faker->md5;
-        $codingProjectUri = $this->faker->slug;
-        $data = [
-            "OriginalFileName" => "foo.pdf",
-            "MimeType" => "application/pdf",
-            "FileSize" => 123456,
-            "StorageKey" => "b5d0d8e0-3aca-11eb-8673-a9b6d94ca755.pdf",
-            "Time" => 1625579588693,
-            "AuthToken" => "65e5968b5e17d5aaa3f5d33200aca2d1911fe2ad2948b47d899d46e6da1e4",
-            "FolderId" => 24515861,
-        ];
-
-        $clientMock = $this->getMockBuilder(Client::class)->getMock();
-        $clientMock->expects($this->once())
-            ->method('request')
-            ->with(
-                'POST',
-                'https://e.coding.net/open-api',
-                [
-                    'headers' => [
-                        'Accept' => 'application/json',
-                        'Authorization' => "token ${codingToken}",
-                        'Content-Type' => 'application/json'
-                    ],
-                    'json' => array_merge([
-                        'Action' => 'CreateFile',
-                        'ProjectName' => $codingProjectUri,
-                    ], $data)
-                ]
-            )
-            ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Coding($clientMock);
-        $result = $coding->createFile($codingToken, $codingProjectUri, $data);
-        $this->assertArrayHasKey('FileId', $result);
     }
 }

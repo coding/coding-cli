@@ -2,7 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Coding;
+use App\Coding\Disk;
+use App\Coding\Wiki;
 use Confluence\Content;
 use LaravelFans\Confluence\Facades\Confluence;
 use Mockery\MockInterface;
@@ -94,7 +95,7 @@ class WikiImportCommandTest extends TestCase
         Confluence::setResource($mock);
 
         $codingResponse = $this->createWikiResponse;
-        $this->mock(Coding::class, function (MockInterface $mock) use (
+        $this->mock(Wiki::class, function (MockInterface $mock) use (
             $codingToken,
             $codingProjectUri,
             $content,
@@ -155,8 +156,8 @@ class WikiImportCommandTest extends TestCase
 
         // 注意：不能使用 partialMock
         // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
-        $mock = \Mockery::mock(Coding::class, [])->makePartial();
-        $this->instance(Coding::class, $mock);
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
 
         $mock->shouldReceive('createWikiByUploadZip')->times(4)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
@@ -167,6 +168,11 @@ class WikiImportCommandTest extends TestCase
             true
         )['Response']['Data']);
         $mock->shouldReceive('updateWikiTitle')->times(4)->andReturn(true);
+
+
+        $mockDisk = \Mockery::mock(Disk::class, [])->makePartial();
+        $this->instance(Disk::class, $mockDisk);
+        $mockDisk->shouldReceive('uploadAttachments')->times(4)->andReturn([]);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')

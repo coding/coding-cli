@@ -18,6 +18,7 @@
     "require": {
         "php": "^8.0",
         "ext-dom": "*",
+        "ext-fileinfo": "*",
         "ext-json": "*",
         "ext-libxml": "*",
         "ext-zip": "*",

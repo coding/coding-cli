@@ -2,14 +2,11 @@
 
 namespace App\Commands;
 
-use App\Coding;
-
 trait WithCoding
 {
     protected string $codingProjectUri;
     protected string $codingTeamDomain;
     protected string $codingToken;
-    protected Coding $coding;
 
     private function setCodingApi(): void
     {
