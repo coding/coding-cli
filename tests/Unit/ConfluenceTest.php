@@ -98,4 +98,13 @@ class ConfluenceTest extends TestCase
             'attachments/65615/65616.txt' => 'Lorem Ipsum 2021-06-08T10_55_27+0800.txt'
         ], $attachments);
     }
+
+    public function testParseAttachmentsOfIndex()
+    {
+        $confluence = new Confluence();
+        $htmlFilePath = $this->dataDir . 'confluence/space1/index.html';
+        $markdown = $confluence->htmlFile2Markdown($htmlFilePath);
+        $attachments = $confluence->parseAttachments($htmlFilePath, $markdown);
+        $this->assertEquals([], $attachments);
+    }
 }

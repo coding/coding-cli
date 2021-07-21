@@ -1,26 +1,14 @@
 <?php
 
-namespace App;
+namespace App\Coding;
 
 use Exception;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ZipArchive;
 
-class Coding
+class Wiki extends Base
 {
-    private Client $client;
-    private ZipArchive $zipArchive;
-
-    public function __construct(Client $client = null, ZipArchive $zipArchive = null)
-    {
-        $this->client = $client ?? new Client();
-        $this->zipArchive = $zipArchive ?? new ZipArchive();
-    }
-
     public function createWiki($token, $projectName, $data)
     {
         $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
@@ -35,32 +23,6 @@ class Coding
             ], $data),
         ]);
         return json_decode($response->getBody(), true)['Response']['Data'];
-    }
-
-    public function createUploadToken($token, $projectName, $fileName)
-    {
-        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => "token ${token}",
-                'Content-Type' => 'application/json'
-            ],
-            'json' => [
-                'Action' => 'CreateUploadToken',
-                'ProjectName' => $projectName,
-                'FileName' => $fileName,
-            ],
-        ]);
-        $uploadToken = json_decode($response->getBody(), true)['Response']['Token'];
-        preg_match_all(
-            '|https://([a-z0-9\-]+)-(\d+)\.cos\.([a-z0-9\-]+)\.myqcloud\.com|',
-            $uploadToken['UploadLink'],
-            $matches
-        );
-        $uploadToken['Bucket'] = $matches[1][0] . '-' . $matches[2][0];
-        $uploadToken['AppId'] = $matches[2][0];
-        $uploadToken['Region'] = $matches[3][0];
-        return $uploadToken;
     }
 
     public function createMarkdownZip($markdown, $path, $markdownFilename): bool|string
@@ -82,19 +44,6 @@ class Coding
         }
         $this->zipArchive->close();
         return $zipFileFullPath;
-    }
-
-    public function upload(array $uploadToken, string $fileFullPath): bool
-    {
-        config(['filesystems.disks.cos.credentials.appId' => $uploadToken['AppId']]);
-        config(['filesystems.disks.cos.credentials.secretId' => $uploadToken['SecretId']]);
-        config(['filesystems.disks.cos.credentials.secretKey' => $uploadToken['SecretKey']]);
-        config(['filesystems.disks.cos.credentials.token' => $uploadToken['UpToken']]);
-        config(['filesystems.disks.cos.region' => $uploadToken['Region']]);
-        config(['filesystems.disks.cos.bucket' => $uploadToken['Bucket']]);
-
-        $disk = Storage::build(config('filesystems.disks.cos'));
-        return $disk->put($uploadToken['StorageKey'], File::get($fileFullPath));
     }
 
     public function createWikiByZip(string $token, string $projectName, array $uploadToken, array $data)
@@ -202,57 +151,20 @@ class Coding
         return $result['Response']['Data']['Title'] == $title;
     }
 
-    /**
-     * 创建网盘目录，不可重名，如已存在，仍然正常返回 id
-     *
-     * @param string $token
-     * @param string $projectName
-     * @param string $folderName
-     * @param int $parentId
-     * @return int
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    public function createFolder(string $token, string $projectName, string $folderName, int $parentId): int
+    public function replaceAttachments(string $markdown, array $codingAttachments): string
     {
-        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => "token ${token}",
-                'Content-Type' => 'application/json'
-            ],
-            'json' => [
-                'Action' => 'CreateFolder',
-                'ProjectName' => $projectName,
-                'FolderName' => $folderName,
-                'ParentId' => $parentId,
-            ],
-        ]);
-        $result = json_decode($response->getBody(), true);
-        return $result['Response']['Data']['Id'];
-    }
-
-    /**
-     * @param string $token
-     * @param string $projectName
-     * @param array $data
-     * @return int
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @todo data 数组无法强类型校验内部字段，考虑用对象
-     */
-    public function createFile(string $token, string $projectName, array $data): array
-    {
-        $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
-            'headers' => [
-                'Accept' => 'application/json',
-                'Authorization' => "token ${token}",
-                'Content-Type' => 'application/json'
-            ],
-            'json' => array_merge([
-                'Action' => 'CreateFile',
-                'ProjectName' => $projectName,
-            ], $data),
-        ]);
-        $result = json_decode($response->getBody(), true);
-        return $result['Response']['Data'];
+        if (empty($codingAttachments)) {
+            return $markdown;
+        }
+        $markdown .= "\n\nAttachments\n---\n";
+        foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
+            $markdown .= "\n-   #${codingAttachment['ResourceCode']} ${codingAttachment['FileName']}";
+            $markdown = preg_replace(
+                "|\[.*\]\(${attachmentPath}\)|",
+                " #${codingAttachment['ResourceCode']} `${codingAttachment['FileName']}`",
+                $markdown
+            );
+        }
+        return $markdown;
     }
 }

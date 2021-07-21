@@ -2,12 +2,15 @@
 
 namespace App\Commands;
 
-use App\Coding;
+use App\Coding\Disk;
+use App\Coding\Wiki;
 use LaravelZero\Framework\Commands\Command;
 
 class WikiUploadCommand extends Command
 {
     use WithCoding;
+
+    private Wiki $codingWiki;
 
     /**
      * The signature of the command.
@@ -33,9 +36,10 @@ class WikiUploadCommand extends Command
      * Execute the console command.
      *
      */
-    public function handle(Coding $coding): int
+    public function handle(Disk $codingDisk, Wiki $codingWiki): int
     {
-        $this->coding = $coding;
+        $this->codingDisk = $codingDisk;
+        $this->codingWiki = $codingWiki;
         $this->setCodingApi();
 
         $filePath = $this->argument('file');
@@ -44,7 +48,7 @@ class WikiUploadCommand extends Command
             return 1;
         }
         $parentId = intval($this->option('parent_id'));
-        $result = $this->coding->createWikiByUploadZip(
+        $result = $this->codingWiki->createWikiByUploadZip(
             $this->codingToken,
             $this->codingProjectUri,
             $filePath,

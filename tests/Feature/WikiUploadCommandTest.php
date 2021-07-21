@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Coding;
+use App\Coding\Wiki;
 use Tests\TestCase;
 
 class WikiUploadCommandTest extends TestCase
@@ -28,8 +28,8 @@ class WikiUploadCommandTest extends TestCase
 
     public function testHandleConfluenceHtmlSuccess()
     {
-        $mock = \Mockery::mock(Coding::class, [])->makePartial();
-        $this->instance(Coding::class, $mock);
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
 
         $mock->shouldReceive('createWikiByUploadZip')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
