@@ -35,8 +35,13 @@ class Confluence
 
     public function htmlFile2Markdown(string $filename): string
     {
+        $html = preg_replace(
+            '|<span class="confluence-embedded-file-wrapper">.*</span>|',
+            '',
+            file_get_contents($filename)
+        );
         libxml_use_internal_errors(true);
-        $this->document->loadHTMLFile($filename);
+        $this->document->loadHTML($html);
 
         $html = $this->document->saveHTML($this->document->getElementById('main-content'));
         return $this->htmlConverter->convert($html);
