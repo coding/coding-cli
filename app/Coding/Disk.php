@@ -80,8 +80,7 @@ class Disk extends Base
                 "StorageKey" => $uploadToken['StorageKey'],
                 "Time" => $uploadToken['Time'],
                 "AuthToken" => $uploadToken['AuthToken'],
-                "FolderId" => 24515861,
-                'ParentIid' => $folderId,
+                "FolderId" => $folderId,
             ]);
             $data[$path] = $result;
         }
