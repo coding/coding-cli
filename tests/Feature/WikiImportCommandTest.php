@@ -54,7 +54,7 @@ class WikiImportCommandTest extends TestCase
         config(['confluence.password' => $this->faker->password]);
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
-        $codingTeamDomain =  $this->faker->domainWord;
+        $codingTeamDomain = $this->faker->domainWord;
         config(['coding.team_domain' => $codingTeamDomain]);
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
@@ -125,7 +125,7 @@ class WikiImportCommandTest extends TestCase
     {
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
-        $codingTeamDomain =  $this->faker->domainWord;
+        $codingTeamDomain = $this->faker->domainWord;
         config(['coding.team_domain' => $codingTeamDomain]);
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
@@ -149,7 +149,7 @@ class WikiImportCommandTest extends TestCase
     {
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
-        $codingTeamDomain =  $this->faker->domainWord;
+        $codingTeamDomain = $this->faker->domainWord;
         config(['coding.team_domain' => $codingTeamDomain]);
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
@@ -192,5 +192,22 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('标题：Text Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
+    }
+
+    public function testAskNothing()
+    {
+        $codingToken = $this->faker->md5;
+        config(['coding.token' => $codingToken]);
+        $codingTeamDomain = $this->faker->domainWord;
+        config(['coding.team_domain' => $codingTeamDomain]);
+        $codingProjectUri = $this->faker->slug;
+        config(['coding.project_uri' => $codingProjectUri]);
+        config(['coding.import.provider' => 'Confluence']);
+        // TODO config function can set the key not exists, can't test the key not exists in config file
+        config(['coding.import.data_type' => 'HTML']);
+        config(['coding.import.data_path' => '/dev/null']);
+        $this->artisan('wiki:import')
+            ->expectsOutput('文件不存在：/dev/null/index.html')
+            ->assertExitCode(1);
     }
 }
