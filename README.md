@@ -31,3 +31,27 @@ chmod +x coding.phar
 sudo mv coding.phar /usr/local/bin/coding
 coding list
 ```
+
+## Confluence 导入 CODING Wiki
+
+1. 浏览器访问 Confluence 空间，导出 HTML，获得一个 zip 压缩包。
+
+![image](https://user-images.githubusercontent.com/4971414/127876158-8ab62714-e43f-4e20-8865-f8817f9264e1.png)
+
+2. 浏览器访问 CODING，创建个人令牌
+
+![image](https://user-images.githubusercontent.com/4971414/127877027-68a3f58e-c253-4ba9-b4f9-68b6673582a3.png)
+
+3. 打开命令行，进入 zip 文件所在的目录，执行命令导入：
+
+```shell
+cd ~/Downloads/
+docker run -it -v $(pwd):/root --env CODING_IMPORT_PROVIDER=Confluence \
+  --env CODING_IMPORT_DATA_TYPE=HTML \
+  --env CODING_IMPORT_DATA_PATH=./Confluence-space-export-231543-81.html.zip \
+  --env CODING_TOKEN=foo \
+  ecoding/coding-cli wiki:import
+```
+
+![image](https://user-images.githubusercontent.com/4971414/127878108-f778bfd6-fe7f-49f3-9590-9efd68404df5.png)
+
