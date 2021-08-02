@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use Alchemy\Zippy\Exception\RuntimeException;
 use Alchemy\Zippy\Zippy;
 use App\Coding\Disk;
 use App\Coding\Wiki;
@@ -251,7 +250,7 @@ class WikiImportCommand extends Command
             mkdir($tmpDir);
             try {
                 $archive->extract($tmpDir);
-            } catch (RuntimeException $exception) {
+            } catch (Exception $exception) {
                 $this->warn($exception->getMessage());
             }
             return $tmpDir . '/' . scandir($tmpDir, 1)[0] . '/';
