@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use Alchemy\Zippy\Zippy;
 use App\Coding\Disk;
 use App\Coding\Wiki;
 use Confluence\Content;
@@ -11,6 +10,7 @@ use Exception;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
+use ZipArchive;
 
 class WikiImportCommand extends Command
 {
@@ -244,15 +244,17 @@ class WikiImportCommand extends Command
         }
 
         if (str_ends_with($dataPath, '.zip')) {
-            $zippy = Zippy::load();
-            $archive = $zippy->open($dataPath);
+            $zip = new ZipArchive();
+            $zip->open($dataPath);
             $tmpDir = sys_get_temp_dir() . '/confluence-' . Str::uuid();
             mkdir($tmpDir);
-            try {
-                $archive->extract($tmpDir);
-            } catch (Exception $exception) {
-                $this->warn($exception->getMessage());
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                // HACK crash when zip include root path /
+                if ($zip->getNameIndex($i) != '/' && $zip->getNameIndex($i) != '__MACOSX/_') {
+                    $zip->extractTo($tmpDir, [$zip->getNameIndex($i)]);
+                }
             }
+            $zip->close();
             return $tmpDir . '/' . scandir($tmpDir, 1)[0] . '/';
         }
         return str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
