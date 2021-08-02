@@ -133,14 +133,14 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('空间导出的 HTML 目录', '~/Downloads/')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', '~/Downloads/')
             ->expectsOutput('文件不存在：~/Downloads/index.html')
             ->assertExitCode(1);
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('空间导出的 HTML 目录', '~/Downloads/index.html')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', '~/Downloads/index.html')
             ->expectsOutput('文件不存在：~/Downloads/index.html')
             ->assertExitCode(1);
     }
@@ -177,7 +177,7 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('空间导出的 HTML 目录', $this->dataDir . 'confluence/space1/')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
             ->expectsOutput('空间名称：空间 1')
             ->expectsOutput('空间标识：space1')
             ->expectsOutput('发现 2 个一级页面')
@@ -209,5 +209,60 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsOutput('文件不存在：/dev/null/index.html')
             ->assertExitCode(1);
+    }
+
+    public function testHandleConfluenceHtmlZipSuccess()
+    {
+        $codingToken = $this->faker->md5;
+        config(['coding.token' => $codingToken]);
+        $codingTeamDomain = $this->faker->domainWord;
+        config(['coding.team_domain' => $codingTeamDomain]);
+        $codingProjectUri = $this->faker->slug;
+        config(['coding.project_uri' => $codingProjectUri]);
+
+        // 注意：不能使用 partialMock
+        // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
+
+        $mock->shouldReceive('createWikiByUploadZip')->times(5)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
+            true
+        )['Response']);
+        $mock->shouldReceive('getImportJobStatus')->times(5)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
+            true
+        )['Response']['Data']);
+        $mock->shouldReceive('updateWikiTitle')->times(5)->andReturn(true);
+
+
+        $mockDisk = \Mockery::mock(Disk::class, [])->makePartial();
+        $this->instance(Disk::class, $mockDisk);
+        $mockDisk->shouldReceive('uploadAttachments')->times(5)->andReturn([]);
+
+        $this->artisan('wiki:import')
+            ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'HTML')
+            ->expectsQuestion(
+                '空间导出的 HTML zip 文件路径',
+                $this->dataDir . 'confluence/Confluence-space-export-231543-81.html.zip'
+            )
+            ->expectsOutput('空间名称：空间 1')
+            ->expectsOutput('空间标识：space1')
+            ->expectsOutput('发现 1 个一级页面')
+            ->expectsOutput("开始导入 CODING：")
+            ->expectsOutput('标题：空间 1 Home')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('发现 2 个子页面')
+            ->expectsOutput('标题：hello world')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('发现 2 个子页面')
+            ->expectsOutput('标题：hello')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('标题：world')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('标题：你好世界')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->assertExitCode(0);
     }
 }
