@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Coding;
 use App\Coding\Disk;
 use App\Coding\Wiki;
 use Confluence\Content;
@@ -11,6 +10,7 @@ use Exception;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
+use ZipArchive;
 
 class WikiImportCommand extends Command
 {
@@ -26,7 +26,7 @@ class WikiImportCommand extends Command
     protected $signature = 'wiki:import
         {--coding_import_provider= : 数据来源，如 Confluence、MediaWiki}
         {--coding_import_data_type= : 数据类型，如 HTML、API}
-        {--coding_import_data_path= : 空间导出的 HTML 目录，如 ./confluence/space1/}
+        {--coding_import_data_path= : 空间导出的 HTML zip 文件路径，如 ./Confluence-space-export-231543-81.html.zip}
         {--confluence_base_uri= : Confluence API URL，如 http://localhost:8090/confluence/rest/api/}
         {--confluence_username=}
         {--confluence_password=}
@@ -135,15 +135,8 @@ class WikiImportCommand extends Command
 
     private function handleConfluenceHtml(): int
     {
-        $dataPath = $this->option('coding_import_data_path');
-        if (is_null($dataPath)) {
-            $dataPath = config('coding.import.data_path') ?? trim($this->ask(
-                '空间导出的 HTML 目录',
-                './confluence/space1/'
-            ));
-        }
-        $dataPath = str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
-        $filePath = $dataPath . 'index.html';
+        $htmlDir = $this->unzipConfluenceHtml();
+        $filePath = $htmlDir . 'index.html';
         if (!file_exists($filePath)) {
             $this->error("文件不存在：$filePath");
             return 1;
@@ -171,7 +164,7 @@ class WikiImportCommand extends Command
             }
             $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             $this->info("开始导入 CODING：");
-            $this->uploadConfluencePages($dataPath, $pages['tree'], $pages['titles']);
+            $this->uploadConfluencePages($htmlDir, $pages['tree'], $pages['titles']);
         } catch (\ErrorException $e) {
             $this->error($e->getMessage());
             return 1;
@@ -238,5 +231,32 @@ class WikiImportCommand extends Command
                 $this->uploadConfluencePages($dataPath, $subPages, $titles, $wikiId);
             }
         }
+    }
+
+    private function unzipConfluenceHtml(): string
+    {
+        $dataPath = $this->option('coding_import_data_path');
+        if (is_null($dataPath)) {
+            $dataPath = config('coding.import.data_path') ?? trim($this->ask(
+                '空间导出的 HTML zip 文件路径',
+                './confluence/space1.zip'
+            ));
+        }
+
+        if (str_ends_with($dataPath, '.zip')) {
+            $zip = new ZipArchive();
+            $zip->open($dataPath);
+            $tmpDir = sys_get_temp_dir() . '/confluence-' . Str::uuid();
+            mkdir($tmpDir);
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                // HACK crash when zip include root path /
+                if ($zip->getNameIndex($i) != '/' && $zip->getNameIndex($i) != '__MACOSX/_') {
+                    $zip->extractTo($tmpDir, [$zip->getNameIndex($i)]);
+                }
+            }
+            $zip->close();
+            return $tmpDir . '/' . scandir($tmpDir, 1)[0] . '/';
+        }
+        return str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
     }
 }
