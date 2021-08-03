@@ -6,7 +6,7 @@
 
 CODING cli 基于 [Laravel Zero](https://laravel-zero.com/)。
 
-## Docker 方式运行
+## run in Docker
 
 ```shell
 docker pull ecoding/coding-cli
@@ -18,7 +18,7 @@ docker run -it -v $(pwd):/root --env-file .env ecoding/coding-cli wiki:import
 
 ![docker run coding cli](https://user-images.githubusercontent.com/4971414/124946851-f0a87500-e041-11eb-9840-1c66e4773af1.png)
 
-## 非 Docker 方式运行
+## run without Docker
 
 要求：PHP 8.0 或更高版本
 
@@ -32,7 +32,7 @@ sudo mv coding.phar /usr/local/bin/coding
 coding list
 ```
 
-## Confluence 导入 CODING Wiki
+## Confluence to CODING Wiki
 
 1. 浏览器访问 Confluence 空间，导出 HTML，获得一个 zip 压缩包。
 
