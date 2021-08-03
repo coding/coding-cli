@@ -44,6 +44,34 @@
                                                            data-linked-resource-container-id="65615"
                                                            data-linked-resource-container-version="2">Lorem Ipsum 2021-06-08T10_55_27+0800.txt</a>
                 </p>
+                <div class="plugin_attachments_upload_container">
+                    <div class="attachments-table-drop-zone">
+                        <div class="drop-zone-empty-text">
+                            此处没有共享的文件。
+                        </div>
+                        <li class="drop-zone-text hidden">
+                            <div class="drop-zone-image"></div>
+                            <span>将文件拖放到这里上传 <a class="aui-button aui-button-link browse-files">浏览文件</a></span>
+                            <img src="images/icons/wait.gif" class="plugin_attachments_dropzone_uploadwaiticon"/>
+                        </li>
+                        <form method="POST" class="plugin_attachments_uploadform aui hidden" action="/pages/plugins/attachments/doattachfile.action?pageId=9016688" enctype="multipart/form-data">
+                            <input type="hidden" name="atl_token" value="${xsrfTokenGenerator.generateToken($req)}">
+                            <div class="field-group">
+                                <label>上传文件</label>
+                                <input type="file" name="file_0" size="30">
+                            </div>
+                            <div class="field-group">
+                                <label>文件描述</label>
+                                <input type="text" class="blank-search text" name="comment_0" size="20" placeholder="评论" >
+                                <input type="hidden" name="labels" value="$macroParams.labels"/>
+                            </div>
+                            <div class="field-group">
+                                <input type="submit" class="submit aui-button" name="confirm" value="上传">
+                            </div>
+                            <iframe class="plugin_attachments_uploadiframe hidden" name="iNUdnzOCSuYk8O0cSk75g6pc4FR7McmkGCRBDS2fu1AtGwASfP4iIuONSQRYA62F" src=""></iframe>
+                        </form>
+                    </div>
+                </div>
             </div>
 
             <div class="pageSection group">

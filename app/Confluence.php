@@ -36,7 +36,11 @@ class Confluence
     public function htmlFile2Markdown(string $filename): string
     {
         $html = preg_replace(
-            '|<span class="confluence-embedded-file-wrapper">.*</span>|',
+            [
+                '|<span class="confluence-embedded-file-wrapper">.*</span>|',
+                '|<div class="drop-zone-empty-text">.*</div>|s',
+                '|<li class="drop-zone-text hidden">.*</li>|s',
+            ],
             '',
             file_get_contents($filename)
         );
