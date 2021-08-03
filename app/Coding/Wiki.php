@@ -39,6 +39,10 @@ class Wiki extends Base
                 // markdown image title: ![](images/default.svg "admin")
                 $tmp = explode(' ', $attachment);
                 $filename = $tmp[0];
+                if (!file_exists($path . $filename)) {
+                    error_log("文件不存在：$filename");
+                    continue;
+                }
                 $this->zipArchive->addFile($path . $filename, $filename);
             }
         }
