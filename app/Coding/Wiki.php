@@ -33,7 +33,7 @@ class Wiki extends Base
             return false;
         }
         $this->zipArchive->addFromString($markdownFilename, $markdown);
-        preg_match_all('/!\[\]\((.+)\)/', $markdown, $matches);
+        preg_match_all('/!\[\]\(([a-z0-9\/\._\-]+)\)/', $markdown, $matches);
         if (!empty($matches)) {
             foreach ($matches[1] as $attachment) {
                 // markdown image title: ![](images/default.svg "admin")
