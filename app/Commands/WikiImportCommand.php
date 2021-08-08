@@ -197,34 +197,24 @@ class WikiImportCommand extends Command
             );
             $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
             $wikiId = null;
-            $waitingTimes = 0;
-            while (true) {
-                // HACK 如果上传成功立即查询，会报错：invoke function
-                sleep(1);
-                try {
-                    $jobStatus = $this->codingWiki->getImportJobStatus(
-                        $this->codingToken,
-                        $this->codingProjectUri,
-                        $result['JobId']
-                    );
-                } catch (Exception $e) {
-                    $waitingTimes++;
-                    continue;
-                }
-                if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waitingTimes < 10) {
-                    $waitingTimes++;
-                    continue;
-                }
-                if ($jobStatus['Status'] == 'success') {
-                    $wikiId = intval($jobStatus['Iids'][0]);
-                    $this->codingWiki->updateWikiTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
-                }
-                break;
-            }
-            if (empty($wikiId)) {
-                $this->warn('导入失败，跳过');
+            try {
+                $jobStatus = $this->codingWiki->getImportJobStatusWithRetry(
+                    $this->codingToken,
+                    $this->codingProjectUri,
+                    $result['JobId']
+                );
+            } catch (Exception $e) {
+                $this->error('错误：导入失败，跳过');
                 continue;
             }
+            if ($jobStatus['Status'] == 'success') {
+                $wikiId = intval($jobStatus['Iids'][0]);
+            }
+            if (empty($wikiId)) {
+                $this->error('错误：导入失败，跳过');
+                continue;
+            }
+            $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
             if (!empty($subPages)) {
                 $this->info('发现 ' . count($subPages) . ' 个子页面');
                 // TODO tests

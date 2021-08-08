@@ -83,6 +83,7 @@ class Wiki extends Base
      * @param string $jobId
      * @return mixed
      * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws Exception
      */
     public function getImportJobStatus(string $token, string $projectName, string $jobId)
     {
@@ -99,9 +100,35 @@ class Wiki extends Base
             ],
         ]);
         $result = json_decode($response->getBody(), true);
+        if (isset($result['Response']['Error']['Message'])) {
+            throw new Exception($result['Response']['Error']['Message']);
+        }
         return $result['Response']['Data'];
     }
 
+    public function getImportJobStatusWithRetry(string $token, string $projectName, string $jobId, int $retry = 10)
+    {
+        $waitingTimes = 0;
+        while (true) {
+            // HACK 如果上传成功立即查询，会报错：invoke function
+            sleep(1);
+            try {
+                $jobStatus = $this->getImportJobStatus($token, $projectName, $jobId);
+                if (in_array($jobStatus['Status'], ['wait_process', 'processing']) && $waitingTimes < $retry) {
+                    $waitingTimes++;
+                    continue;
+                }
+                return $jobStatus;
+            } catch (Exception $e) {
+                if ($waitingTimes < 10) {
+                    $waitingTimes++;
+                    continue;
+                }
+                throw $e;
+            }
+            break;
+        }
+    }
     public function createWikiByUploadZip(string $token, string $projectName, string $zipFileFullPath, int $parentId)
     {
         $zipFilename = basename($zipFileFullPath);
@@ -136,7 +163,7 @@ class Wiki extends Base
         return $result['Response']['Data'];
     }
 
-    public function updateWikiTitle(string $token, string $projectName, int $id, string $title): bool
+    public function updateTitle(string $token, string $projectName, int $id, string $title): bool
     {
         $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
             'headers' => [
