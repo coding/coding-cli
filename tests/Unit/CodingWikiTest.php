@@ -243,7 +243,7 @@ class CodingWikiTest extends TestCase
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
 
-    public function testUpdateWikiTitle()
+    public function testupdateTitle()
     {
         $responseBody = file_get_contents($this->dataDir . 'coding/ModifyWikiTitleResponse.json');
         $codingToken = $this->faker->md5;
@@ -273,7 +273,7 @@ class CodingWikiTest extends TestCase
             )
             ->willReturn(new Response(200, [], $responseBody));
         $coding = new Wiki($clientMock);
-        $result = $coding->updateWikiTitle($codingToken, $codingProjectUri, $id, $title);
+        $result = $coding->updateTitle($codingToken, $codingProjectUri, $id, $title);
         $this->assertTrue($result);
     }
 }

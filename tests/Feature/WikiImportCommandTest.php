@@ -167,7 +167,7 @@ class WikiImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
             true
         )['Response']['Data']);
-        $mock->shouldReceive('updateWikiTitle')->times(4)->andReturn(true);
+        $mock->shouldReceive('updateTitle')->times(4)->andReturn(true);
 
 
         $mockDisk = \Mockery::mock(Disk::class, [])->makePartial();
@@ -233,7 +233,7 @@ class WikiImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
             true
         )['Response']['Data']);
-        $mock->shouldReceive('updateWikiTitle')->times(5)->andReturn(true);
+        $mock->shouldReceive('updateTitle')->times(5)->andReturn(true);
 
 
         $mockDisk = \Mockery::mock(Disk::class, [])->makePartial();
