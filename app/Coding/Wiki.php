@@ -188,12 +188,14 @@ class Wiki extends Base
         if (empty($codingAttachments)) {
             return $markdown;
         }
-        $markdown .= "\n\nAttachments\n---\n";
+        $markdown .= "\n\nAttachments\n---\n\n";
         foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
-            $markdown .= "\n-   #${codingAttachment['ResourceCode']} ${codingAttachment['FileName']}";
+            $resourceCode = $codingAttachment['ResourceCode'] ?? 0;
+            $filename = $codingAttachment['FileName'] ?? '此文件迁移失败';
+            $markdown .= "-   #${resourceCode} ${filename}\n";
             $markdown = preg_replace(
                 "|\[.*\]\(${attachmentPath}\)|",
-                " #${codingAttachment['ResourceCode']} `${codingAttachment['FileName']}`",
+                " #${resourceCode} `${filename}`",
                 $markdown
             );
         }

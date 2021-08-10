@@ -243,7 +243,7 @@ class CodingWikiTest extends TestCase
         $this->assertEquals(json_decode($responseBody, true)['Response']['Data'], $result);
     }
 
-    public function testupdateTitle()
+    public function testUpdateTitle()
     {
         $responseBody = file_get_contents($this->dataDir . 'coding/ModifyWikiTitleResponse.json');
         $codingToken = $this->faker->md5;
@@ -275,5 +275,35 @@ class CodingWikiTest extends TestCase
         $coding = new Wiki($clientMock);
         $result = $coding->updateTitle($codingToken, $codingProjectUri, $id, $title);
         $this->assertTrue($result);
+    }
+
+    public function testReplaceAttachments()
+    {
+        $codingAttachments = [
+            'attachments/123/1.pdf' => [
+                "FileId" => 1234561,
+                "FileName" => "foo.pdf",
+                "ResourceCode" => 11,
+            ],
+            'attachments/123/2.ppt' => [
+                "FileId" => 1234562,
+                "FileName" => "bar.ppt",
+                "ResourceCode" => 12,
+            ],
+            'attachments/123/3.mp4' => [],
+        ];
+        $markdown = "hello [foo.pdf](attachments/123/1.pdf)\n"
+            . "world [bar.ppt](attachments/123/2.ppt) [hello.mp4](attachments/123/3.mp4)";
+        $expectedMarkdown = "hello  #11 `foo.pdf`\n"
+            . "world  #12 `bar.ppt`  #0 `此文件迁移失败`\n\n"
+            . "Attachments\n"
+            . "---\n\n"
+            . "-   #11 foo.pdf\n"
+            . "-   #12 bar.ppt\n"
+            . "-   #0 此文件迁移失败\n"
+        ;
+        $wiki = new Wiki();
+        $newMarkdown = $wiki->replaceAttachments($markdown, $codingAttachments);
+        $this->assertEquals($expectedMarkdown, $newMarkdown);
     }
 }

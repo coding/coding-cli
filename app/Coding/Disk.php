@@ -72,16 +72,22 @@ class Disk extends Base
                 $projectName,
                 $filename
             );
-            $this->upload($uploadToken, $dataPath . $path);
-            $result = $this->createFile($token, $projectName, [
-                "OriginalFileName" => $filename,
-                "MimeType" => mime_content_type($dataPath . $path),
-                "FileSize" => filesize($dataPath . $path),
-                "StorageKey" => $uploadToken['StorageKey'],
-                "Time" => $uploadToken['Time'],
-                "AuthToken" => $uploadToken['AuthToken'],
-                "FolderId" => $folderId,
-            ]);
+            $result = [];
+            try {
+                $this->upload($uploadToken, $dataPath . $path);
+                $result = $this->createFile($token, $projectName, [
+                    "OriginalFileName" => $filename,
+                    "MimeType" => mime_content_type($dataPath . $path),
+                    "FileSize" => filesize($dataPath . $path),
+                    "StorageKey" => $uploadToken['StorageKey'],
+                    "Time" => $uploadToken['Time'],
+                    "AuthToken" => $uploadToken['AuthToken'],
+                    "FolderId" => $folderId,
+                ]);
+            } catch (\Exception $e) {
+                // TODO laravel log
+                error_log('ERROR: ' . $e->getMessage());
+            }
             $data[$path] = $result;
         }
         return $data;
