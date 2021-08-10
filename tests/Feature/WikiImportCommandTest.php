@@ -121,6 +121,25 @@ class WikiImportCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
+    public function testHandleConfluenceHtmlDirNotExist()
+    {
+        $codingToken = $this->faker->md5;
+        config(['coding.token' => $codingToken]);
+        $codingTeamDomain = $this->faker->domainWord;
+        config(['coding.team_domain' => $codingTeamDomain]);
+        $codingProjectUri = $this->faker->slug;
+        config(['coding.project_uri' => $codingProjectUri]);
+
+        $this->artisan('wiki:import')
+            ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'HTML')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', '/dev/null/')
+            ->expectsOutput('文件不存在：/dev/null/index.html')
+            ->expectsOutput('报错信息汇总：')
+            ->expectsOutput('文件不存在：/dev/null/index.html')
+            ->assertExitCode(1);
+    }
+
     public function testHandleConfluenceHtmlFileNotExist()
     {
         $codingToken = $this->faker->md5;
@@ -133,15 +152,8 @@ class WikiImportCommandTest extends TestCase
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('空间导出的 HTML zip 文件路径', '~/Downloads/')
-            ->expectsOutput('文件不存在：~/Downloads/index.html')
-            ->assertExitCode(1);
-
-        $this->artisan('wiki:import')
-            ->expectsQuestion('数据来源？', 'Confluence')
-            ->expectsQuestion('数据类型？', 'HTML')
-            ->expectsQuestion('空间导出的 HTML zip 文件路径', '~/Downloads/index.html')
-            ->expectsOutput('文件不存在：~/Downloads/index.html')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', '/dev/null/index.html')
+            ->expectsOutput('文件不存在：/dev/null/index.html')
             ->assertExitCode(1);
     }
 

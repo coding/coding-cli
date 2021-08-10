@@ -18,6 +18,8 @@ class WikiImportCommand extends Command
 
     protected Disk $codingDisk;
     protected Wiki $codingWiki;
+    protected array $errors = [];
+
     /**
      * The signature of the command.
      *
@@ -81,12 +83,21 @@ class WikiImportCommand extends Command
         }
         switch ($dataType) {
             case 'HTML':
-                return $this->handleConfluenceHtml();
+                $this->handleConfluenceHtml();
+                break;
             case 'API':
-                return $this->handleConfluenceApi();
+                $this->handleConfluenceApi();
+                break;
             default:
                 break;
         }
+        if (!empty($this->errors)) {
+            $this->info('报错信息汇总：');
+        }
+        foreach ($this->errors as $error) {
+            $this->error($error);
+        }
+        return count($this->errors);
     }
 
     private function createWiki($data)
@@ -139,7 +150,9 @@ class WikiImportCommand extends Command
         $htmlDir = $this->unzipConfluenceHtml();
         $filePath = $htmlDir . 'index.html';
         if (!file_exists($filePath)) {
-            $this->error("文件不存在：$filePath");
+            $message = "文件不存在：$filePath";
+            $this->error($message);
+            $this->errors[] = $message;
             return 1;
         }
         try {
@@ -187,6 +200,13 @@ class WikiImportCommand extends Command
                 $dataPath,
                 $attachments
             );
+            foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
+                if (empty($codingAttachment)) {
+                    $message = '错误：文件上传失败 ' . $attachmentPath;
+                    $this->error($message);
+                    $this->errors[] = $message;
+                }
+            }
             $markdown = $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
             $mdFilename = substr($page, 0, -5) . '.md';
             if ($this->option('save-markdown')) {
@@ -208,14 +228,18 @@ class WikiImportCommand extends Command
                     $result['JobId']
                 );
             } catch (Exception $e) {
-                $this->error('错误：导入失败，跳过');
+                $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
+                $this->error($message);
+                $this->errors[] = $message;
                 continue;
             }
             if ($jobStatus['Status'] == 'success') {
                 $wikiId = intval($jobStatus['Iids'][0]);
             }
             if (empty($wikiId)) {
-                $this->error('错误：导入失败，跳过');
+                $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
+                $this->error($message);
+                $this->errors[] = $message;
                 continue;
             }
             $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
