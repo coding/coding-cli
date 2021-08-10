@@ -40,6 +40,7 @@ class Confluence
                 '|<span class="confluence-embedded-file-wrapper">.*</span>|',
                 '|<div class="drop-zone-empty-text">.*</div>|s',
                 '|<li class="drop-zone-text hidden">.*</li>|s',
+                '|<a class="confluence-userlink url fn".*</a>|',
                 '|<img .* src="data:.*/>|',
             ],
             '',

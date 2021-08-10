@@ -26,6 +26,14 @@ class ConfluenceTest extends TestCase
         $this->assertEquals("你好\n==", $markdown);
     }
 
+    public function testHtmlFile2MarkdownUserLink()
+    {
+        $confluence = new Confluence();
+        $markdown = file_get_contents($this->dataDir . 'confluence/space1/image-demo_65619.md');
+        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/space1/image-demo_65619.html');
+        $this->assertEquals(trim($markdown), $newMarkdown);
+    }
+
     public function testParsePagesTree()
     {
         $document = new DOMDocument();
