@@ -27,7 +27,7 @@ class Wiki extends Base
 
     public function createMarkdownZip($markdown, $path, $markdownFilename): bool|string
     {
-        $zipFileFullPath = sys_get_temp_dir() . '/' . $markdownFilename . '-' . Str::uuid() . '.zip';
+        $zipFileFullPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $markdownFilename . '-' . Str::uuid() . '.zip';
         if ($this->zipArchive->open($zipFileFullPath, ZipArchive::CREATE) !== true) {
             Log::error("cannot open <$zipFileFullPath>");
             return false;
@@ -39,11 +39,12 @@ class Wiki extends Base
                 // markdown image title: ![](images/default.svg "admin")
                 $tmp = explode(' ', $attachment);
                 $filename = $tmp[0];
-                if (!file_exists($path . $filename)) {
+                $filepath = $path . DIRECTORY_SEPARATOR . $filename;
+                if (!file_exists($filepath)) {
                     error_log("文件不存在：$filename");
                     continue;
                 }
-                $this->zipArchive->addFile($path . $filename, $filename);
+                $this->zipArchive->addFile($filepath, $filename);
             }
         }
         $this->zipArchive->close();
