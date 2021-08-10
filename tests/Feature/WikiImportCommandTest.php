@@ -121,7 +121,7 @@ class WikiImportCommandTest extends TestCase
             ->assertExitCode(0);
     }
 
-    public function testHandleConfluenceHtmlDirNotExist()
+    private function setConfig()
     {
         $codingToken = $this->faker->md5;
         config(['coding.token' => $codingToken]);
@@ -129,7 +129,11 @@ class WikiImportCommandTest extends TestCase
         config(['coding.team_domain' => $codingTeamDomain]);
         $codingProjectUri = $this->faker->slug;
         config(['coding.project_uri' => $codingProjectUri]);
+    }
 
+    public function testHandleConfluenceHtmlDirNotExist()
+    {
+        $this->setConfig();
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
@@ -142,12 +146,7 @@ class WikiImportCommandTest extends TestCase
 
     public function testHandleConfluenceHtmlFileNotExist()
     {
-        $codingToken = $this->faker->md5;
-        config(['coding.token' => $codingToken]);
-        $codingTeamDomain = $this->faker->domainWord;
-        config(['coding.team_domain' => $codingTeamDomain]);
-        $codingProjectUri = $this->faker->slug;
-        config(['coding.project_uri' => $codingProjectUri]);
+        $this->setConfig();
 
         $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
@@ -159,12 +158,7 @@ class WikiImportCommandTest extends TestCase
 
     public function testHandleConfluenceHtmlSuccess()
     {
-        $codingToken = $this->faker->md5;
-        config(['coding.token' => $codingToken]);
-        $codingTeamDomain = $this->faker->domainWord;
-        config(['coding.team_domain' => $codingTeamDomain]);
-        $codingProjectUri = $this->faker->slug;
-        config(['coding.project_uri' => $codingProjectUri]);
+        $this->setConfig();
 
         // 注意：不能使用 partialMock
         // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
@@ -214,12 +208,7 @@ class WikiImportCommandTest extends TestCase
 
     public function testAskNothing()
     {
-        $codingToken = $this->faker->md5;
-        config(['coding.token' => $codingToken]);
-        $codingTeamDomain = $this->faker->domainWord;
-        config(['coding.team_domain' => $codingTeamDomain]);
-        $codingProjectUri = $this->faker->slug;
-        config(['coding.project_uri' => $codingProjectUri]);
+        $this->setConfig();
         config(['coding.import.provider' => 'Confluence']);
         // TODO config function can set the key not exists, can't test the key not exists in config file
         config(['coding.import.data_type' => 'HTML']);
@@ -231,12 +220,7 @@ class WikiImportCommandTest extends TestCase
 
     public function testHandleConfluenceHtmlZipSuccess()
     {
-        $codingToken = $this->faker->md5;
-        config(['coding.token' => $codingToken]);
-        $codingTeamDomain = $this->faker->domainWord;
-        config(['coding.team_domain' => $codingTeamDomain]);
-        $codingProjectUri = $this->faker->slug;
-        config(['coding.project_uri' => $codingProjectUri]);
+        $this->setConfig();
 
         // 注意：不能使用 partialMock
         // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
