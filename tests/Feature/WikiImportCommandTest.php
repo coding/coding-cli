@@ -174,7 +174,7 @@ class WikiImportCommandTest extends TestCase
         $this->instance(Disk::class, $mockDisk);
         $mockDisk->shouldReceive('uploadAttachments')->times(4)->andReturn([]);
 
-        $this->artisan('wiki:import')
+        $this->artisan('wiki:import', ['--save-markdown' => true])
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
@@ -192,6 +192,12 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('标题：Text Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
+        $this->assertFileExists($this->dataDir . 'confluence/space1/65591.md');
+        $this->assertFileExists($this->dataDir . 'confluence/space1/attachment-demo_65615.md');
+        $this->assertFileExists($this->dataDir . 'confluence/space1/text-demo_65601.md');
+        unlink($this->dataDir . 'confluence/space1/65591.md');
+        unlink($this->dataDir . 'confluence/space1/attachment-demo_65615.md');
+        unlink($this->dataDir . 'confluence/space1/text-demo_65601.md');
     }
 
     public function testAskNothing()
