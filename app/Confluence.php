@@ -67,7 +67,9 @@ class Confluence
             $element->parentNode->removeChild($element);
         }
         $html = $this->document->saveHTML($contentElement);
-        return $this->htmlConverter->convert($html);
+        $markdown = $this->htmlConverter->convert($html);
+        $markdown = preg_replace("/[ ]*\n/s", "\n", $markdown);
+        return preg_replace("/\n\n\n/s", "\n", $markdown);
     }
 
     /**
