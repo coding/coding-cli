@@ -49,7 +49,14 @@ class Confluence
         libxml_use_internal_errors(true);
         $this->document->loadHTML($html);
 
-        $html = $this->document->saveHTML($this->document->getElementById('main-content'));
+        $contentElement = $this->document->getElementById('main-content');
+        $divElements = $contentElement->getElementsByTagName('div');
+        foreach ($divElements as $divElement) {
+            if ($divElement->getAttribute('class') == 'recently-updated recently-updated-social') {
+                $divElement->parentNode->parentNode->removeChild($divElement->parentNode);
+            }
+        }
+        $html = $this->document->saveHTML($contentElement);
         return $this->htmlConverter->convert($html);
     }
 

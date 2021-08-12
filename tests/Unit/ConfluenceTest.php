@@ -115,4 +115,12 @@ class ConfluenceTest extends TestCase
         $attachments = $confluence->parseAttachments($htmlFilePath, $markdown);
         $this->assertEquals([], $attachments);
     }
+
+    public function testIgnoreRecentSpaceActivity()
+    {
+        $confluence = new Confluence();
+        $markdown = file_get_contents($this->dataDir . 'confluence/recent-space-activity-demo.md');
+        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/recent-space-activity-demo.html');
+        $this->assertEquals(trim($markdown), $newMarkdown);
+    }
 }
