@@ -1,8 +1,4 @@
 hello
 =====
 
- 
-
- 
-
 Hello World!
