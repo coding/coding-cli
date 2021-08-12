@@ -52,7 +52,12 @@ class Confluence
         $contentElement = $this->document->getElementById('main-content');
         $divElements = $contentElement->getElementsByTagName('div');
         foreach ($divElements as $divElement) {
-            if ($divElement->getAttribute('class') == 'recently-updated recently-updated-social') {
+            if (
+                in_array($divElement->getAttribute('class'), [
+                'recently-updated recently-updated-social',
+                'plugin-contributors',
+                ])
+            ) {
                 $divElement->parentNode->parentNode->removeChild($divElement->parentNode);
             }
         }
