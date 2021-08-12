@@ -51,6 +51,7 @@ class Confluence
 
         $contentElement = $this->document->getElementById('main-content');
         $divElements = $contentElement->getElementsByTagName('div');
+        $needDeleteElements = [];
         foreach ($divElements as $divElement) {
             if (
                 in_array($divElement->getAttribute('class'), [
@@ -58,8 +59,12 @@ class Confluence
                 'plugin-contributors',
                 ])
             ) {
-                $divElement->parentNode->parentNode->removeChild($divElement->parentNode);
+                $needDeleteElements[] = $divElement->parentNode;
             }
+        }
+        for ($i = count($needDeleteElements); $i > 0; $i--) {
+            $element = $needDeleteElements[$i - 1];
+            $element->parentNode->removeChild($element);
         }
         $html = $this->document->saveHTML($contentElement);
         return $this->htmlConverter->convert($html);
