@@ -212,7 +212,7 @@ class WikiImportCommand extends Command
             if ($this->option('save-markdown')) {
                 file_put_contents($dataPath . $mdFilename, $markdown . "\n");
             }
-            $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $dataPath, $mdFilename);
+            $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $dataPath, $mdFilename, $title);
             $result = $this->codingWiki->createWikiByUploadZip(
                 $this->codingToken,
                 $this->codingProjectUri,

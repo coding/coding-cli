@@ -25,7 +25,7 @@ class Wiki extends Base
         return json_decode($response->getBody(), true)['Response']['Data'];
     }
 
-    public function createMarkdownZip($markdown, $path, $markdownFilename): bool|string
+    public function createMarkdownZip($markdown, $path, $markdownFilename, $title): bool|string
     {
         $zipFileFullPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . $markdownFilename . '-' . Str::uuid() . '.zip';
         if ($this->zipArchive->open($zipFileFullPath, ZipArchive::CREATE) !== true) {
@@ -41,7 +41,7 @@ class Wiki extends Base
                 $filename = $tmp[0];
                 $filepath = $path . DIRECTORY_SEPARATOR . $filename;
                 if (!file_exists($filepath)) {
-                    error_log("文件不存在：$filename");
+                    Log::error("文件不存在", ['filename' => $filename, 'title' => $title]);
                     continue;
                 }
                 $this->zipArchive->addFile($filepath, $filename);
