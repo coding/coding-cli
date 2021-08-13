@@ -116,19 +116,11 @@ class ConfluenceTest extends TestCase
         $this->assertEquals([], $attachments);
     }
 
-    public function testIgnoreRecentSpaceActivity()
+    public function testTable()
     {
         $confluence = new Confluence();
-        $markdown = file_get_contents($this->dataDir . 'confluence/recent-space-activity-demo.md');
-        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/recent-space-activity-demo.html');
-        $this->assertEquals(trim($markdown), $newMarkdown);
-    }
-
-    public function testIgnoreSpaceContributors()
-    {
-        $confluence = new Confluence();
-        $markdown = file_get_contents($this->dataDir . 'confluence/space-contributors-demo.md');
-        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/space-contributors-demo.html');
+        $markdown = file_get_contents($this->dataDir . 'confluence/table-demo.md');
+        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/table-demo.html');
         $this->assertEquals(trim($markdown), $newMarkdown);
     }
 }
