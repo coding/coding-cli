@@ -22,4 +22,12 @@ class ConfluenceIgnoreHtmlTest extends TestCase
         $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/space-contributors-demo.html');
         $this->assertEquals(trim($markdown), $newMarkdown);
     }
+
+    public function testIgnoreUserLink()
+    {
+        $confluence = new Confluence();
+        $markdown = file_get_contents($this->dataDir . 'confluence/userlink-demo.md');
+        $newMarkdown = $confluence->htmlFile2Markdown($this->dataDir . 'confluence/userlink-demo.html');
+        $this->assertEquals(trim($markdown), $newMarkdown);
+    }
 }
