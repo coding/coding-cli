@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 FILES=$(git diff --diff-filter=d --name-only HEAD | grep '.php$')
 for file in $FILES; do
