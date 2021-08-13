@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 use ZipArchive;
@@ -109,7 +110,7 @@ class CodingWikiTest extends TestCase
         $filename = 'image-demo_65619.md';
         $markdown = file_get_contents($path . $filename);
         $coding = new Wiki();
-        $zipFile = $coding->createMarkdownZip($markdown, $path, $filename);
+        $zipFile = $coding->createMarkdownZip($markdown, $path, $filename, 'hello');
 
         $this->assertTrue(file_exists($zipFile));
         $zip = new ZipArchive();
@@ -118,6 +119,23 @@ class CodingWikiTest extends TestCase
         $this->assertEquals('image-demo_65619.md', $zip->getNameIndex(0));
         $this->assertEquals('attachments/65619/65624.png', $zip->getNameIndex(1));
         $this->assertEquals('attachments/65619/65623.png', $zip->getNameIndex(2));
+    }
+
+    public function testCreateMarkdownZipButImageNotExist()
+    {
+        $path = $this->dataDir . 'confluence/';
+        $filename = 'image-not-exist-demo.md';
+        $markdown = file_get_contents($path . $filename);
+        $coding = new Wiki();
+        Log::shouldReceive('error')
+            ->with('文件不存在', ['filename' => 'not/exist.png', 'title' => 'hello']);
+        $zipFile = $coding->createMarkdownZip($markdown, $path, $filename, 'hello');
+
+        $this->assertTrue(file_exists($zipFile));
+        $zip = new ZipArchive();
+        $zip->open($zipFile);
+        $this->assertEquals(1, $zip->numFiles);
+        $this->assertEquals($filename, $zip->getNameIndex(0));
     }
 
     public function testGetImportJobStatus()
