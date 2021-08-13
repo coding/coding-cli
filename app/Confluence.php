@@ -4,6 +4,7 @@ namespace App;
 
 use DOMDocument;
 use DOMXPath;
+use League\HTMLToMarkdown\Converter\TableConverter;
 use League\HTMLToMarkdown\HtmlConverter;
 
 class Confluence
@@ -17,6 +18,7 @@ class Confluence
         $this->document = $document ?? new DOMDocument();
         $this->htmlConverter = $htmlConverter ?? new HtmlConverter();
         $this->htmlConverter->getConfig()->setOption('strip_tags', true);
+        $this->htmlConverter->getEnvironment()->addConverter(new TableConverter());
     }
 
     public function parsePageHtml(string $filename, string $spaceName): array
