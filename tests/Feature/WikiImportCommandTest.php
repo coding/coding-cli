@@ -152,7 +152,7 @@ class WikiImportCommandTest extends TestCase
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('空间导出的 HTML zip 文件路径', '/dev/null/index.html')
-            ->expectsOutput('文件不存在：/dev/null/index.html')
+            ->expectsOutput('页面不存在：/dev/null/index.html')
             ->assertExitCode(1);
     }
 
@@ -188,7 +188,6 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('空间标识：space1')
             ->expectsOutput('发现 3 个一级页面')
             ->expectsOutput("开始导入 CODING：")
-            ->expectsOutput('标题：Not Found')
             ->expectsOutput('页面不存在：' . $this->dataDir . 'confluence/space1/not-found.html')
             ->expectsOutput('标题：Image Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
@@ -199,13 +198,15 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->expectsOutput('标题：Text Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
-            ->assertExitCode(0);
-        $this->assertFileExists($this->dataDir . 'confluence/space1/65591.md');
-        $this->assertFileExists($this->dataDir . 'confluence/space1/attachment-demo_65615.md');
-        $this->assertFileExists($this->dataDir . 'confluence/space1/text-demo_65601.md');
-        unlink($this->dataDir . 'confluence/space1/65591.md');
-        unlink($this->dataDir . 'confluence/space1/attachment-demo_65615.md');
-        unlink($this->dataDir . 'confluence/space1/text-demo_65601.md');
+            ->expectsOutput('报错信息汇总：')
+            ->expectsOutput('页面不存在：' . $this->dataDir . 'confluence/space1/not-found.html')
+            ->assertExitCode(1);
+        $this->assertFileExists($this->dataDir . '/confluence/space1/65591.md');
+        $this->assertFileExists($this->dataDir . '/confluence/space1/attachment-demo_65615.md');
+        $this->assertFileExists($this->dataDir . '/confluence/space1/text-demo_65601.md');
+        unlink($this->dataDir . '/confluence/space1/65591.md');
+        unlink($this->dataDir . '/confluence/space1/attachment-demo_65615.md');
+        unlink($this->dataDir . '/confluence/space1/text-demo_65601.md');
     }
 
     public function testAskNothing()
@@ -266,6 +267,35 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('标题：world')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->expectsOutput('标题：你好世界')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->assertExitCode(0);
+    }
+
+    public function testHandleConfluenceSingleHtmlSuccess()
+    {
+        $this->setConfig();
+
+        // 注意：不能使用 partialMock
+        // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
+
+        $mock->shouldReceive('createWikiByUploadZip')->times(1)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
+            true
+        )['Response']);
+        $mock->shouldReceive('getImportJobStatus')->times(1)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
+            true
+        )['Response']['Data']);
+        $mock->shouldReceive('updateTitle')->times(1)->andReturn(true);
+
+
+        $this->artisan('wiki:import')
+            ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'HTML')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/image-demo_65619.html')
+            ->expectsOutput('标题：空间 1 : Image Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
     }

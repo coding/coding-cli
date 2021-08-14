@@ -58,7 +58,7 @@ class Disk extends Base
         return $result['Response']['Data'];
     }
 
-    public function uploadAttachments(string $token, string $projectName, string $dataPath, array $attachments): array
+    public function uploadAttachments(string $token, string $projectName, string $dataDir, array $attachments): array
     {
         if (empty($attachments)) {
             return [];
@@ -72,13 +72,14 @@ class Disk extends Base
                 $projectName,
                 $filename
             );
+            $filePath = $dataDir . DIRECTORY_SEPARATOR . $path;
             $result = [];
             try {
-                $this->upload($uploadToken, $dataPath . $path);
+                $this->upload($uploadToken, $filePath);
                 $result = $this->createFile($token, $projectName, [
                     "OriginalFileName" => $filename,
-                    "MimeType" => mime_content_type($dataPath . $path),
-                    "FileSize" => filesize($dataPath . $path),
+                    "MimeType" => mime_content_type($filePath),
+                    "FileSize" => filesize($filePath),
                     "StorageKey" => $uploadToken['StorageKey'],
                     "Time" => $uploadToken['Time'],
                     "AuthToken" => $uploadToken['AuthToken'],
