@@ -4,6 +4,7 @@ namespace App;
 
 use DOMDocument;
 use DOMXPath;
+use Illuminate\Support\Facades\File;
 use League\HTMLToMarkdown\Converter\TableConverter;
 use League\HTMLToMarkdown\HtmlConverter;
 
@@ -46,7 +47,7 @@ class Confluence
                 '|<img .* src="data:.*/>|',
             ],
             '',
-            file_get_contents($filename)
+            File::get($filename)
         );
         libxml_use_internal_errors(true);
         $this->document->loadHTML($html);
