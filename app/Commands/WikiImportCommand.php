@@ -148,8 +148,12 @@ class WikiImportCommand extends Command
 
     private function handleConfluenceHtml(): int
     {
-        $htmlDir = $this->unzipConfluenceHtml();
-        $filePath = $htmlDir . 'index.html';
+        $path = $this->unzipConfluenceHtml();
+        if (str_ends_with($path, '.html')) {
+            return $this->uploadConfluencePage($path);
+        }
+        $htmlDir = $path;
+        $filePath = $htmlDir . DIRECTORY_SEPARATOR . 'index.html';
         if (!file_exists($filePath)) {
             $message = "文件不存在：$filePath";
             $this->error($message);
@@ -188,55 +192,75 @@ class WikiImportCommand extends Command
         return 0;
     }
 
-    private function uploadConfluencePages(string $dataPath, array $tree, array $titles, int $parentId = 0): void
+    private function uploadConfluencePages(string $htmlDir, array $tree, array $titles, int $parentId = 0): void
     {
         foreach ($tree as $page => $subPages) {
             $title = $titles[$page];
-            $this->info('标题：' . $title);
-            try {
-                $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
-            } catch (FileNotFoundException $e) {
-                $this->error('页面不存在：' . $dataPath . $page);
-                continue;
-            }
-            $mdFilename = $this->dealAttachments($dataPath, $page, $markdown);
-            $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $dataPath, $mdFilename, $title);
-            $result = $this->codingWiki->createWikiByUploadZip(
-                $this->codingToken,
-                $this->codingProjectUri,
-                $zipFilePath,
-                $parentId,
-            );
-            $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
-            $wikiId = null;
-            try {
-                $jobStatus = $this->codingWiki->getImportJobStatusWithRetry(
-                    $this->codingToken,
-                    $this->codingProjectUri,
-                    $result['JobId']
-                );
-            } catch (Exception $e) {
-                $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
-                $this->error($message);
-                $this->errors[] = $message;
-                continue;
-            }
-            if ($jobStatus['Status'] == 'success') {
-                $wikiId = intval($jobStatus['Iids'][0]);
-            }
-            if (empty($wikiId)) {
-                $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
-                $this->error($message);
-                $this->errors[] = $message;
-                continue;
-            }
-            $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
-            if (!empty($subPages)) {
+            $wikiId = $this->uploadConfluencePage($htmlDir . DIRECTORY_SEPARATOR . $page, $title, $parentId);
+            if ($wikiId && !empty($subPages)) {
                 $this->info('发现 ' . count($subPages) . ' 个子页面');
                 // TODO tests
-                $this->uploadConfluencePages($dataPath, $subPages, $titles, $wikiId);
+                $this->uploadConfluencePages($htmlDir, $subPages, $titles, $wikiId);
             }
         }
+    }
+
+    private function uploadConfluencePage(string $filePath, string $title = '', int $parentId = 0): int
+    {
+        try {
+            $markdown = $this->confluence->htmlFile2Markdown($filePath);
+        } catch (FileNotFoundException $e) {
+            $message = '页面不存在：' . $filePath;
+            $this->error($message);
+            $this->errors[] = $message;
+            return false;
+        }
+        libxml_use_internal_errors(true);
+        $this->document->loadHTMLFile($filePath);
+        if (empty($title)) {
+            $title = $this->document->getElementsByTagName('title')[0]->nodeValue;
+        }
+        $this->info('标题：' . $title);
+
+        $htmlDir = dirname($filePath);
+        $page = basename($filePath);
+        $markdown = $this->dealAttachments($filePath, $markdown);
+        $mdFilename = substr($page, 0, -5) . '.md';
+        if ($this->option('save-markdown')) {
+            file_put_contents($htmlDir . DIRECTORY_SEPARATOR . $mdFilename, $markdown . "\n");
+        }
+        $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $htmlDir, $mdFilename, $title);
+        $result = $this->codingWiki->createWikiByUploadZip(
+            $this->codingToken,
+            $this->codingProjectUri,
+            $zipFilePath,
+            $parentId,
+        );
+        $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
+        $wikiId = null;
+        try {
+            $jobStatus = $this->codingWiki->getImportJobStatusWithRetry(
+                $this->codingToken,
+                $this->codingProjectUri,
+                $result['JobId']
+            );
+        } catch (Exception $e) {
+            $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
+            $this->error($message);
+            $this->errors[] = $message;
+            return false;
+        }
+        if ($jobStatus['Status'] == 'success') {
+            $wikiId = intval($jobStatus['Iids'][0]);
+        }
+        if (empty($wikiId)) {
+            $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
+            $this->error($message);
+            $this->errors[] = $message;
+            return false;
+        }
+        $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
+        return $wikiId;
     }
 
     private function unzipConfluenceHtml(): string
@@ -263,16 +287,16 @@ class WikiImportCommand extends Command
             $zip->close();
             return $tmpDir . '/' . scandir($tmpDir, 1)[0] . '/';
         }
-        return str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
+        return rtrim($dataPath, '/');
     }
 
-    private function dealAttachments(string $dataPath, string $page, string $markdown): string
+    private function dealAttachments(string $filePath, string $markdown): string
     {
-        $attachments = $this->confluence->parseAttachments($dataPath . $page, $markdown);
+        $attachments = $this->confluence->parseAttachments($filePath, $markdown);
         $codingAttachments = $this->codingDisk->uploadAttachments(
             $this->codingToken,
             $this->codingProjectUri,
-            $dataPath,
+            dirname($filePath),
             $attachments
         );
         foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
@@ -282,11 +306,6 @@ class WikiImportCommand extends Command
                 $this->errors[] = $message;
             }
         }
-        $markdown = $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
-        $mdFilename = substr($page, 0, -5) . '.md';
-        if ($this->option('save-markdown')) {
-            file_put_contents($dataPath . $mdFilename, $markdown . "\n");
-        }
-        return $mdFilename;
+        return $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
     }
 }

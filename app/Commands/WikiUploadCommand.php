@@ -30,7 +30,7 @@ class WikiUploadCommand extends Command
      *
      * @var string
      */
-    protected $description = '上传 Zip 导入 Wiki';
+    protected $description = '上传 Markdown 和图片的 Zip 导入 Wiki';
 
     /**
      * Execute the console command.
