@@ -7,6 +7,7 @@ use App\Coding\Wiki;
 use Confluence\Content;
 use DOMDocument;
 use Exception;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
@@ -192,26 +193,13 @@ class WikiImportCommand extends Command
         foreach ($tree as $page => $subPages) {
             $title = $titles[$page];
             $this->info('标题：' . $title);
-            $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
-            $attachments = $this->confluence->parseAttachments($dataPath . $page, $markdown);
-            $codingAttachments = $this->codingDisk->uploadAttachments(
-                $this->codingToken,
-                $this->codingProjectUri,
-                $dataPath,
-                $attachments
-            );
-            foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
-                if (empty($codingAttachment)) {
-                    $message = '错误：文件上传失败 ' . $attachmentPath;
-                    $this->error($message);
-                    $this->errors[] = $message;
-                }
+            try {
+                $markdown = $this->confluence->htmlFile2Markdown($dataPath . $page);
+            } catch (FileNotFoundException $e) {
+                $this->error('页面不存在：' . $dataPath . $page);
+                continue;
             }
-            $markdown = $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
-            $mdFilename = substr($page, 0, -5) . '.md';
-            if ($this->option('save-markdown')) {
-                file_put_contents($dataPath . $mdFilename, $markdown . "\n");
-            }
+            $mdFilename = $this->dealAttachments($dataPath, $page, $markdown);
             $zipFilePath = $this->codingWiki->createMarkdownZip($markdown, $dataPath, $mdFilename, $title);
             $result = $this->codingWiki->createWikiByUploadZip(
                 $this->codingToken,
@@ -276,5 +264,29 @@ class WikiImportCommand extends Command
             return $tmpDir . '/' . scandir($tmpDir, 1)[0] . '/';
         }
         return str_ends_with($dataPath, '/index.html') ? substr($dataPath, 0, -10) : Str::finish($dataPath, '/');
+    }
+
+    private function dealAttachments(string $dataPath, string $page, string $markdown): string
+    {
+        $attachments = $this->confluence->parseAttachments($dataPath . $page, $markdown);
+        $codingAttachments = $this->codingDisk->uploadAttachments(
+            $this->codingToken,
+            $this->codingProjectUri,
+            $dataPath,
+            $attachments
+        );
+        foreach ($codingAttachments as $attachmentPath => $codingAttachment) {
+            if (empty($codingAttachment)) {
+                $message = '错误：文件上传失败 ' . $attachmentPath;
+                $this->error($message);
+                $this->errors[] = $message;
+            }
+        }
+        $markdown = $this->codingWiki->replaceAttachments($markdown, $codingAttachments);
+        $mdFilename = substr($page, 0, -5) . '.md';
+        if ($this->option('save-markdown')) {
+            file_put_contents($dataPath . $mdFilename, $markdown . "\n");
+        }
+        return $mdFilename;
     }
 }
