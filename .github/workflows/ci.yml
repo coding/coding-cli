@@ -40,7 +40,7 @@ jobs:
           args: ./vendor/bin/phpunit --coverage-clover coverage.xml --coverage-filter app/ tests/
 
       - name: codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
 
       - name: GitHub Environment Variables Action
         uses: FranzDiebold/github-env-vars-action@v2
