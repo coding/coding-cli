@@ -39,7 +39,7 @@ class WikiImportCommand extends Command
         {--coding_team_domain= : CODING 团队域名，如 xxx.coding.net 即填写 xxx}
         {--coding_project_uri= : CODING 项目标识，如 xxx.coding.net/p/yyy 即填写 yyy}
         {--save-markdown : 本地保留生成的 Markdown 文件}
-        {--continue : 断点续传}
+        {--clean : 清除上次产生的本地临时文件，比如断点续传的日志}
     ';
 
     /**
@@ -186,6 +186,7 @@ class WikiImportCommand extends Command
             }
             $this->info('发现 ' . count($pages['tree']) . ' 个一级页面');
             $this->info("开始导入 CODING：");
+            $this->clean($htmlDir);
             $this->uploadConfluencePages($htmlDir, $pages['tree'], $pages['titles']);
         } catch (\ErrorException $e) {
             $this->error($e->getMessage());
@@ -195,11 +196,18 @@ class WikiImportCommand extends Command
         return 0;
     }
 
-    private function uploadConfluencePages(string $htmlDir, array $tree, array $titles, int $parentId = 0): void
+    private function clean(string $htmlDir): void
     {
-        if ($this->option('continue') && file_exists($htmlDir . DIRECTORY_SEPARATOR . 'success.log')) {
+        if ($this->option('clean')) {
+            File::delete($htmlDir . DIRECTORY_SEPARATOR . 'success.log');
+        }
+        if (file_exists($htmlDir . DIRECTORY_SEPARATOR . 'success.log')) {
             $this->importedPages = parse_ini_file($htmlDir . DIRECTORY_SEPARATOR . 'success.log');
         }
+    }
+
+    private function uploadConfluencePages(string $htmlDir, array $tree, array $titles, int $parentId = 0): void
+    {
         foreach ($tree as $page => $subPages) {
             $title = $titles[$page];
             $wikiId = $this->uploadConfluencePage($htmlDir . DIRECTORY_SEPARATOR . $page, $title, $parentId);
@@ -214,7 +222,7 @@ class WikiImportCommand extends Command
     private function uploadConfluencePage(string $filePath, string $title = '', int $parentId = 0): int
     {
         $page = basename($filePath);
-        if ($this->option('continue') && isset($this->importedPages[$page])) {
+        if (!$this->option('clean') && isset($this->importedPages[$page])) {
             $this->warn('断点续传，跳过页面：' . $page);
             return $this->importedPages[$page];
         }
@@ -247,7 +255,6 @@ class WikiImportCommand extends Command
             $parentId,
         );
         $this->info('上传成功，正在处理，任务 ID：' . $result['JobId']);
-        $wikiId = null;
         try {
             $jobStatus = $this->codingWiki->getImportJobStatusWithRetry(
                 $this->codingToken,
@@ -265,9 +272,7 @@ class WikiImportCommand extends Command
             return false;
         }
         $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
-        if ($this->option('continue')) {
-            file_put_contents($htmlDir . DIRECTORY_SEPARATOR . 'success.log', "$page = $wikiId\n", FILE_APPEND);
-        }
+        file_put_contents($htmlDir . DIRECTORY_SEPARATOR . 'success.log', "$page = $wikiId\n", FILE_APPEND);
         return $wikiId;
     }
 
