@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Coding\Disk;
 use App\Coding\Wiki;
 use Confluence\Content;
-use Illuminate\Support\Facades\File;
 use LaravelFans\Confluence\Facades\Confluence;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -181,8 +180,10 @@ class WikiImportCommandTest extends TestCase
         $this->instance(Disk::class, $mockDisk);
         $mockDisk->shouldReceive('uploadAttachments')->times(4)->andReturn([]);
 
-        File::delete($this->dataDir . '/confluence/space1/success.log');
-        $this->artisan('wiki:import', ['--save-markdown' => true, '--continue' => true])
+        $log = "image-demo_65619.html = 27\n"
+            . "65591.html = 27\n";
+        file_put_contents($this->dataDir . '/confluence/space1/success.log', $log);
+        $this->artisan('wiki:import', ['--save-markdown' => true, '--clean' => true])
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
@@ -334,7 +335,7 @@ class WikiImportCommandTest extends TestCase
         $log = "image-demo_65619.html = 27\n"
             . "65591.html = 27\n";
         file_put_contents($this->dataDir . '/confluence/space1/success.log', $log);
-        $this->artisan('wiki:import', ['--continue' => true])
+        $this->artisan('wiki:import')
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
