@@ -8,6 +8,7 @@ use Confluence\Content;
 use DOMDocument;
 use Exception;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 use LaravelFans\Confluence\Facades\Confluence;
 use LaravelZero\Framework\Commands\Command;
@@ -20,6 +21,7 @@ class WikiImportCommand extends Command
     protected Disk $codingDisk;
     protected Wiki $codingWiki;
     protected array $errors = [];
+    protected array $importedPages = [];
 
     /**
      * The signature of the command.
@@ -37,6 +39,7 @@ class WikiImportCommand extends Command
         {--coding_team_domain= : CODING 团队域名，如 xxx.coding.net 即填写 xxx}
         {--coding_project_uri= : CODING 项目标识，如 xxx.coding.net/p/yyy 即填写 yyy}
         {--save-markdown : 本地保留生成的 Markdown 文件}
+        {--continue : 断点续传}
     ';
 
     /**
@@ -194,6 +197,9 @@ class WikiImportCommand extends Command
 
     private function uploadConfluencePages(string $htmlDir, array $tree, array $titles, int $parentId = 0): void
     {
+        if ($this->option('continue') && file_exists($htmlDir . DIRECTORY_SEPARATOR . 'success.log')) {
+            $this->importedPages = parse_ini_file($htmlDir . DIRECTORY_SEPARATOR . 'success.log');
+        }
         foreach ($tree as $page => $subPages) {
             $title = $titles[$page];
             $wikiId = $this->uploadConfluencePage($htmlDir . DIRECTORY_SEPARATOR . $page, $title, $parentId);
@@ -207,6 +213,11 @@ class WikiImportCommand extends Command
 
     private function uploadConfluencePage(string $filePath, string $title = '', int $parentId = 0): int
     {
+        $page = basename($filePath);
+        if ($this->option('continue') && isset($this->importedPages[$page])) {
+            $this->warn('断点续传，跳过页面：' . $page);
+            return $this->importedPages[$page];
+        }
         try {
             $markdown = $this->confluence->htmlFile2Markdown($filePath);
         } catch (FileNotFoundException $e) {
@@ -223,7 +234,6 @@ class WikiImportCommand extends Command
         $this->info('标题：' . $title);
 
         $htmlDir = dirname($filePath);
-        $page = basename($filePath);
         $markdown = $this->dealAttachments($filePath, $markdown);
         $mdFilename = substr($page, 0, -5) . '.md';
         if ($this->option('save-markdown')) {
@@ -244,22 +254,20 @@ class WikiImportCommand extends Command
                 $this->codingProjectUri,
                 $result['JobId']
             );
+            if ($jobStatus['Status'] != 'success') {
+                throw new Exception('job status ' . $jobStatus['Status']);
+            }
+            $wikiId = intval($jobStatus['Iids'][0]);
         } catch (Exception $e) {
             $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
             $this->error($message);
             $this->errors[] = $message;
             return false;
         }
-        if ($jobStatus['Status'] == 'success') {
-            $wikiId = intval($jobStatus['Iids'][0]);
-        }
-        if (empty($wikiId)) {
-            $message = '错误：导入失败，跳过 ' . $title . ' ' . $page;
-            $this->error($message);
-            $this->errors[] = $message;
-            return false;
-        }
         $this->codingWiki->updateTitle($this->codingToken, $this->codingProjectUri, $wikiId, $title);
+        if ($this->option('continue')) {
+            file_put_contents($htmlDir . DIRECTORY_SEPARATOR . 'success.log', "$page = $wikiId\n", FILE_APPEND);
+        }
         return $wikiId;
     }
 

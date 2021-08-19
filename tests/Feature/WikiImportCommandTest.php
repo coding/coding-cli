@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Coding\Disk;
 use App\Coding\Wiki;
 use Confluence\Content;
+use Illuminate\Support\Facades\File;
 use LaravelFans\Confluence\Facades\Confluence;
 use Mockery\MockInterface;
 use Tests\TestCase;
@@ -180,7 +181,8 @@ class WikiImportCommandTest extends TestCase
         $this->instance(Disk::class, $mockDisk);
         $mockDisk->shouldReceive('uploadAttachments')->times(4)->andReturn([]);
 
-        $this->artisan('wiki:import', ['--save-markdown' => true])
+        File::delete($this->dataDir . '/confluence/space1/success.log');
+        $this->artisan('wiki:import', ['--save-markdown' => true, '--continue' => true])
             ->expectsQuestion('数据来源？', 'Confluence')
             ->expectsQuestion('数据类型？', 'HTML')
             ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
@@ -207,6 +209,11 @@ class WikiImportCommandTest extends TestCase
         unlink($this->dataDir . '/confluence/space1/65591.md');
         unlink($this->dataDir . '/confluence/space1/attachment-demo_65615.md');
         unlink($this->dataDir . '/confluence/space1/text-demo_65601.md');
+        $log = "image-demo_65619.html = 27\n"
+            . "65591.html = 27\n"
+            . "attachment-demo_65615.html = 27\n"
+            . "text-demo_65601.html = 27\n";
+        $this->assertEquals($log, file_get_contents($this->dataDir . '/confluence/space1/success.log'));
     }
 
     public function testAskNothing()
@@ -298,5 +305,59 @@ class WikiImportCommandTest extends TestCase
             ->expectsOutput('标题：空间 1 : Image Demo')
             ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
             ->assertExitCode(0);
+    }
+
+    public function testHandleConfluenceHtmlContinueSuccess()
+    {
+        $this->setConfig();
+
+        // 注意：不能使用 partialMock
+        // https://laracasts.com/discuss/channels/testing/this-partialmock-doesnt-call-the-constructor
+        $mock = \Mockery::mock(Wiki::class, [])->makePartial();
+        $this->instance(Wiki::class, $mock);
+
+        $mock->shouldReceive('createWikiByUploadZip')->times(2)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateWikiByZipResponse.json'),
+            true
+        )['Response']);
+        $mock->shouldReceive('getImportJobStatus')->times(2)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeImportJobStatusResponse.json'),
+            true
+        )['Response']['Data']);
+        $mock->shouldReceive('updateTitle')->times(2)->andReturn(true);
+
+
+        $mockDisk = \Mockery::mock(Disk::class, [])->makePartial();
+        $this->instance(Disk::class, $mockDisk);
+        $mockDisk->shouldReceive('uploadAttachments')->times(2)->andReturn([]);
+
+        $log = "image-demo_65619.html = 27\n"
+            . "65591.html = 27\n";
+        file_put_contents($this->dataDir . '/confluence/space1/success.log', $log);
+        $this->artisan('wiki:import', ['--continue' => true])
+            ->expectsQuestion('数据来源？', 'Confluence')
+            ->expectsQuestion('数据类型？', 'HTML')
+            ->expectsQuestion('空间导出的 HTML zip 文件路径', $this->dataDir . 'confluence/space1/')
+            ->expectsOutput('空间名称：空间 1')
+            ->expectsOutput('空间标识：space1')
+            ->expectsOutput('发现 3 个一级页面')
+            ->expectsOutput("开始导入 CODING：")
+            ->expectsOutput('页面不存在：' . $this->dataDir . 'confluence/space1/not-found.html')
+            ->expectsOutput('断点续传，跳过页面：image-demo_65619.html')
+            ->expectsOutput('断点续传，跳过页面：65591.html')
+            ->expectsOutput('发现 2 个子页面')
+            ->expectsOutput('标题：Attachment Demo')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('标题：Text Demo')
+            ->expectsOutput('上传成功，正在处理，任务 ID：a12353fa-f45b-4af2-83db-666bf9f66615')
+            ->expectsOutput('报错信息汇总：')
+            ->expectsOutput('页面不存在：' . $this->dataDir . 'confluence/space1/not-found.html')
+            ->assertExitCode(1);
+        $log = "image-demo_65619.html = 27\n"
+            . "65591.html = 27\n"
+            . "attachment-demo_65615.html = 27\n"
+            . "text-demo_65601.html = 27\n";
+        $this->assertEquals($log, file_get_contents($this->dataDir . '/confluence/space1/success.log'));
+        unlink($this->dataDir . '/confluence/space1/success.log');
     }
 }
