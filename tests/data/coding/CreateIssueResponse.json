@@ -1,0 +1,124 @@
+{
+  "Response" : {
+    "Issue" : {
+      "Assignee" : {
+        "Avatar" : "",
+        "Email" : "",
+        "GlobalKey" : "",
+        "Id" : 0,
+        "Name" : "",
+        "Phone" : "",
+        "Status" : 0,
+        "TeamGlobalKey" : "",
+        "TeamId" : 0
+      },
+      "Code" : 2742,
+      "CompletedAt" : 0,
+      "CreatedAt" : 1634541907501,
+      "Creator" : {
+        "Avatar" : "https://coding-net-production-static-ci.codehub.cn/2cb665a3-bebc-4b09-aa00-2b6df3e33edc.jpg?imageMogr2/auto-orient/format/jpeg/cut/400x400x0x0",
+        "Email" : "",
+        "GlobalKey" : "",
+        "Id" : 183478,
+        "Name" : "sinkcup",
+        "Phone" : "",
+        "Status" : 1,
+        "TeamGlobalKey" : "",
+        "TeamId" : 0
+      },
+      "CustomFields" : [],
+      "DefectType" : {
+        "IconUrl" : "",
+        "Id" : 0,
+        "Name" : ""
+      },
+      "Description" : "",
+      "DueDate" : 0,
+      "Epic" : {
+        "Assignee" : {
+          "Avatar" : "",
+          "Email" : "",
+          "GlobalKey" : "",
+          "Id" : 0,
+          "Name" : "",
+          "Phone" : "",
+          "Status" : 0,
+          "TeamGlobalKey" : "",
+          "TeamId" : 0
+        },
+        "Code" : 0,
+        "IssueStatusId" : 0,
+        "IssueStatusName" : "",
+        "Name" : "",
+        "Priority" : "",
+        "Type" : ""
+      },
+      "Files" : [],
+      "IssueStatusId" : 1227034,
+      "IssueStatusName" : "未开始",
+      "IssueStatusType" : "TODO",
+      "IssueTypeDetail" : {
+        "Description" : "需求是指用户解决某一个问题或达到某一目标所需的软件功能。",
+        "Id" : 213219,
+        "IsSystem" : true,
+        "IssueType" : "REQUIREMENT",
+        "Name" : "需求"
+      },
+      "IssueTypeId" : 213219,
+      "Iteration" : {
+        "Code" : 0,
+        "Name" : "",
+        "Status" : ""
+      },
+      "IterationId" : 0,
+      "Labels" : [],
+      "Name" : "issue by curl",
+      "Parent" : {
+        "Assignee" : {
+          "Avatar" : "",
+          "Email" : "",
+          "GlobalKey" : "",
+          "Id" : 0,
+          "Name" : "",
+          "Phone" : "",
+          "Status" : 0,
+          "TeamGlobalKey" : "",
+          "TeamId" : 0
+        },
+        "Code" : 0,
+        "IssueStatusId" : 0,
+        "IssueStatusName" : "",
+        "IssueStatusType" : "",
+        "IssueTypeDetail" : {
+          "Description" : "",
+          "Id" : 0,
+          "IsSystem" : false,
+          "IssueType" : "",
+          "Name" : ""
+        },
+        "Name" : "",
+        "Priority" : "",
+        "Type" : ""
+      },
+      "ParentType" : "REQUIREMENT",
+      "Priority" : "0",
+      "ProjectModule" : {
+        "Id" : 0,
+        "Name" : ""
+      },
+      "RequirementType" : {
+        "Id" : 0,
+        "Name" : ""
+      },
+      "StartDate" : 0,
+      "StoryPoint" : "",
+      "SubTasks" : [],
+      "ThirdLinks" : [],
+      "Type" : "REQUIREMENT",
+      "UpdatedAt" : 1634541907501,
+      "Watchers" : [],
+      "WorkingHours" : 0
+    },
+    "RequestId" : "5b7bae01-f26f-16d7-0d61-c8fa67ea0472"
+  }
+}
