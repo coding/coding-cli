@@ -1,0 +1,52 @@
+{
+   "Response" : {
+      "IssueTypes" : [
+         {
+            "Description" : "史诗是一个较大的功能或特性，可以分解为多个较小的需求或任务。通常其需要分多次迭代才可完成。",
+            "Id" : 213217,
+            "IsSystem" : true,
+            "IssueType" : "EPIC",
+            "Name" : "史诗",
+            "SplitTargetIssueTypeId" : [],
+            "SplitType" : "UNSPLITTABLE"
+         },
+         {
+            "Description" : "用户故事是敏捷框架中最小的工作单元，是从用户角度描述软件如何为其带来特定的价值。",
+            "Id" : 213218,
+            "IsSystem" : true,
+            "IssueType" : "REQUIREMENT",
+            "Name" : "用户故事",
+            "SplitTargetIssueTypeId" : [],
+            "SplitType" : "ALL_REQUIREMENT"
+         },
+         {
+            "Description" : "任务是指为实现某个目标或需求所进行的具体活动。",
+            "Id" : 213220,
+            "IsSystem" : true,
+            "IssueType" : "MISSION",
+            "Name" : "任务",
+            "SplitTargetIssueTypeId" : [],
+            "SplitType" : "UNSPLITTABLE"
+         },
+         {
+            "Description" : "缺陷是指软件不符合最初定义的业务需求的现象，缺陷管理用于跟踪这些问题和错误。",
+            "Id" : 213221,
+            "IsSystem" : true,
+            "IssueType" : "DEFECT",
+            "Name" : "缺陷",
+            "SplitTargetIssueTypeId" : [],
+            "SplitType" : "UNSPLITTABLE"
+         },
+         {
+            "Description" : "在敏捷模式下，将一个事项拆分成更小的块。",
+            "Id" : 213222,
+            "IsSystem" : true,
+            "IssueType" : "SUB_TASK",
+            "Name" : "子工作项",
+            "SplitTargetIssueTypeId" : [],
+            "SplitType" : "UNSPLITTABLE"
+         }
+      ],
+      "RequestId" : "9f7e8405-943d-fb02-96bf-3ee3c63e0fe6"
+   }
+}
