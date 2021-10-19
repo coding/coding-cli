@@ -55,8 +55,11 @@ return [
 
     'providers' => [
         App\Providers\AppServiceProvider::class,
+        Illuminate\Translation\TranslationServiceProvider::class,
+        Illuminate\Validation\ValidationServiceProvider::class,
         \LaravelFans\Confluence\ConfluenceServiceProvider::class,
         \Dscmall\Flysystem\Cos\CosStorageServiceProvider::class,
+        Maatwebsite\Excel\ExcelServiceProvider::class,
     ],
 
 ];
