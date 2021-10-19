@@ -2,6 +2,8 @@
 
 namespace App\Coding;
 
+use Exception;
+
 class Issue extends Base
 {
     public function create($token, $projectName, $data)
@@ -17,6 +19,10 @@ class Issue extends Base
                 'ProjectName' => $projectName,
             ], $data),
         ]);
-        return json_decode($response->getBody(), true)['Response']['Issue'];
+        $result = json_decode($response->getBody(), true);
+        if (isset($result['Response']['Error']['Message'])) {
+            throw new Exception($result['Response']['Error']['Message']);
+        }
+        return $result['Response']['Issue'];
     }
 }

@@ -1,0 +1,9 @@
+{
+  "Response" : {
+    "Error" : {
+      "Code" : "FailedOperation",
+      "Message" : "issue_custom_field_required"
+    },
+    "RequestId" : "504114e3-bcb7-5b51-6ff7-7bb5cb04f121"
+  }
+}
