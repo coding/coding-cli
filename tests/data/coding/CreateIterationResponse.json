@@ -1,0 +1,24 @@
+{
+   "Response" : {
+      "Iteration" : {
+         "Assignee" : 0,
+         "Code" : 2746,
+         "CompletedCount" : 0,
+         "CompletedPercent" : 0,
+         "Completer" : 0,
+         "CreatedAt" : 1634697259529,
+         "Creator" : 183478,
+         "Deleter" : 0,
+         "EndAt" : -28800000,
+         "Goal" : "",
+         "Name" : "it by cli",
+         "ProcessingCount" : 0,
+         "StartAt" : -28800000,
+         "Starter" : 0,
+         "Status" : "WAIT_PROCESS",
+         "UpdatedAt" : 1634697259529,
+         "WaitProcessCount" : 0
+      },
+      "RequestId" : "58777aa6-e6e4-155a-c99f-415a33615ca6"
+   }
+}
