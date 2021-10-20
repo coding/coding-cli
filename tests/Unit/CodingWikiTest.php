@@ -39,7 +39,7 @@ class CodingWikiTest extends TestCase
 
     public function testCreateWiki()
     {
-        $responseBody = file_get_contents($this->dataDir . 'coding/createWikiResponse.json');
+        $responseBody = file_get_contents($this->dataDir . 'coding/CreateWikiResponse.json');
         $codingToken = $this->faker->md5;
         $codingProjectUri = $this->faker->slug;
         $article = [
@@ -74,7 +74,7 @@ class CodingWikiTest extends TestCase
 
     public function testCreateUploadToken()
     {
-        $responseBody = file_get_contents($this->dataDir . 'coding/createUploadTokenResponse.json');
+        $responseBody = file_get_contents($this->dataDir . 'coding/CreateUploadTokenResponse.json');
         $codingToken = $this->faker->md5;
         $codingProjectUri = $this->faker->slug;
         $fileName = $this->faker->word;

@@ -17,7 +17,7 @@ class WikiImportCommandTest extends TestCase
     {
         parent::setUp();
         $this->createWikiResponse = json_decode(
-            file_get_contents($this->dataDir . 'coding/createWikiResponse.json'),
+            file_get_contents($this->dataDir . 'coding/CreateWikiResponse.json'),
             true
         )['Response']['Data'];
     }
