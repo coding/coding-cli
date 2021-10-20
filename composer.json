@@ -26,6 +26,7 @@
         "laravel-fans/confluence": "^0.1.1",
         "laravel-zero/framework": "^8.8",
         "league/html-to-markdown": "^5.0",
+        "nesbot/carbon": "^2.53",
         "sinkcup/laravel-filesystem-cos-updated": "^4.0"
     },
     "require-dev": {

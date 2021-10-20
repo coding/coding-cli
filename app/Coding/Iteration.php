@@ -2,6 +2,8 @@
 
 namespace App\Coding;
 
+use Carbon\Carbon;
+
 class Iteration extends Base
 {
     public function create($token, $projectName, $data)
@@ -19,5 +21,11 @@ class Iteration extends Base
         ]);
         $result = json_decode($response->getBody(), true);
         return $result['Response']['Iteration'];
+    }
+
+    public static function generateName(Carbon $startAt, Carbon $endAt): string
+    {
+        $endFormat = $startAt->year == $endAt->year ? 'm/d' : 'Y/m/d';
+        return $startAt->format('Y/m/d') . '-' . $endAt->format($endFormat) . ' 迭代';
     }
 }
