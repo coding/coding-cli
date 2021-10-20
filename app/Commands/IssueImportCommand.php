@@ -4,9 +4,8 @@ namespace App\Commands;
 
 use App\Coding\Issue;
 use App\Coding\Project;
-use App\Imports\IssuesImport;
 use LaravelZero\Framework\Commands\Command;
-use Maatwebsite\Excel\Facades\Excel;
+use Rap2hpoutre\FastExcel\Facades\FastExcel;
 
 class IssueImportCommand extends Command
 {
@@ -51,7 +50,7 @@ class IssueImportCommand extends Command
         foreach ($result as $item) {
             $issueTypes[$item['Name']] = $item;
         }
-        $rows = Excel::toArray(new IssuesImport(), $filePath)[0];
+        $rows = FastExcel::import($filePath);
         foreach ($rows as $row) {
             $data = [
                 'Type' => $issueTypes[$row['事项类型']]['IssueType'],
