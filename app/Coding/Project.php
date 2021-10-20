@@ -2,8 +2,6 @@
 
 namespace App\Coding;
 
-use Exception;
-
 class Project extends Base
 {
     public function getIssueTypes($token, $projectName)
@@ -14,10 +12,10 @@ class Project extends Base
                 'Authorization' => "token ${token}",
                 'Content-Type' => 'application/json'
             ],
-            'json' => array_merge([
+            'json' => [
                 'Action' => 'DescribeProjectIssueTypeList',
                 'ProjectName' => $projectName,
-            ]),
+            ],
         ]);
         $result = json_decode($response->getBody(), true);
         return $result['Response']['IssueTypes'];
