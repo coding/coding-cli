@@ -3,6 +3,7 @@
 namespace App\Coding;
 
 use Carbon\Carbon;
+use Exception;
 
 class Iteration extends Base
 {
@@ -20,6 +21,9 @@ class Iteration extends Base
             ], $data),
         ]);
         $result = json_decode($response->getBody(), true);
+        if (isset($result['Response']['Error']['Message'])) {
+            throw new Exception($result['Response']['Error']['Message']);
+        }
         return $result['Response']['Iteration'];
     }
 
