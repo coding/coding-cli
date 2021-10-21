@@ -1,0 +1,79 @@
+{
+  "Response": {
+    "RequestId": "dc827006-32db-a74f-eeae-13bec31c8b92",
+    "ProjectIssueStatusList": [
+      {
+        "IssueType": "REQUIREMENT",
+        "IssueStatusId": 4,
+        "IsDefault": true,
+        "CreatedAt": 1597283400000,
+        "UpdatedAt": 1597283400000,
+        "Sort": 0,
+        "IssueStatus": {
+          "Id": 4,
+          "Index": 3,
+          "Name": "未开始",
+          "Type": "TODO",
+          "Description": "",
+          "IsSystem": true,
+          "CreatedAt": 1597283396000,
+          "UpdatedAt": 1597283396000
+        }
+      },
+      {
+        "IssueType": "REQUIREMENT",
+        "IssueStatusId": 9,
+        "IsDefault": false,
+        "CreatedAt": 1597283400000,
+        "UpdatedAt": 1597283400000,
+        "Sort": 0,
+        "IssueStatus": {
+          "Id": 9,
+          "Index": 8,
+          "Name": "开发中",
+          "Type": "PROCESSING",
+          "Description": "",
+          "IsSystem": true,
+          "CreatedAt": 1597283396000,
+          "UpdatedAt": 1597283396000
+        }
+      },
+      {
+        "IssueType": "REQUIREMENT",
+        "IssueStatusId": 10,
+        "IsDefault": false,
+        "CreatedAt": 1597283400000,
+        "UpdatedAt": 1597283400000,
+        "Sort": 0,
+        "IssueStatus": {
+          "Id": 10,
+          "Index": 9,
+          "Name": "测试中",
+          "Type": "PROCESSING",
+          "Description": "",
+          "IsSystem": true,
+          "CreatedAt": 1597283396000,
+          "UpdatedAt": 1597283396000
+        }
+      },
+      {
+        "IssueType": "REQUIREMENT",
+        "IssueStatusId": 13,
+        "IsDefault": false,
+        "CreatedAt": 1597283400000,
+        "UpdatedAt": 1597283400000,
+        "Sort": 0,
+        "IssueStatus": {
+          "Id": 13,
+          "Index": 12,
+          "Name": "已完成",
+          "Type": "COMPLETED",
+          "Description": "",
+          "IsSystem": true,
+          "CreatedAt": 1597283396000,
+          "UpdatedAt": 1597283396000
+        }
+      }
+    ]
+  }
+}
