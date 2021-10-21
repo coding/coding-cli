@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Coding\Issue;
+use App\Coding\Iteration;
 use App\Coding\Project;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
@@ -31,11 +32,14 @@ class IssueImportCommand extends Command
      */
     protected $description = '导入事项';
 
+    protected array $iterationMap = [];
+    protected array $issueTypes = [];
+
     /**
      * Execute the console command.
      *
      */
-    public function handle(Issue $codingIssue, Project $codingProject): int
+    public function handle(Issue $codingIssue, Project $codingProject, Iteration $iteration): int
     {
         $this->setCodingApi();
 
@@ -45,29 +49,45 @@ class IssueImportCommand extends Command
             return 1;
         }
 
-        $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
-        $issueTypes = [];
-        foreach ($result as $item) {
-            $issueTypes[$item['Name']] = $item;
-        }
         $rows = FastExcel::import($filePath);
         foreach ($rows as $row) {
-            $data = [
-                'Type' => $issueTypes[$row['事项类型']]['IssueType'],
-                'IssueTypeId' => $issueTypes[$row['事项类型']]['Id'],
-                'Name' => $row['标题'],
-                'Priority' => \App\Models\Issue::PRIORITY_MAP[$row['优先级']],
-            ];
             try {
-                $result = $codingIssue->create($this->codingToken, $this->codingProjectUri, $data);
+                $iterationResult = $this->createByRow($codingProject, $codingIssue, $iteration, $row);
             } catch (\Exception $e) {
                 $this->error('Error: ' . $e->getMessage());
                 return 1;
             }
             $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}" .
-                "/all/issues/${result['Code']}");
+                "/all/issues/${iterationResult['Code']}");
         }
 
         return 0;
+    }
+
+    private function createByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
+    {
+        if (empty($this->issueTypes)) {
+            $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
+            foreach ($result as $item) {
+                $this->issueTypes[$item['Name']] = $item;
+            }
+        }
+        $data = [
+            'Type' => $this->issueTypes[$row['事项类型']]['IssueType'],
+            'IssueTypeId' => $this->issueTypes[$row['事项类型']]['Id'],
+            'Name' => $row['标题'],
+            'Priority' => \App\Models\Issue::PRIORITY_MAP[$row['优先级']],
+            'IterationCode' => $row['所属迭代'] ? $this->getIterationCode($iteration, $row['所属迭代']) : null,
+        ];
+        return $issue->create($this->codingToken, $this->codingProjectUri, $data);
+    }
+
+    private function getIterationCode(Iteration $iteration, string $name)
+    {
+        if (!isset($this->iterationMap[$name])) {
+            $result = $iteration->create($this->codingToken, $this->codingProjectUri, ['name' => $name]);
+            $this->iterationMap[$name] = $result['Code'];
+        }
+        return $this->iterationMap[$name];
     }
 }
