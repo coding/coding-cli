@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Coding\Project;
+use App\Coding\ProjectSetting;
 use Tests\TestCase;
 
 class ProjectGetIssueTypesCommandTest extends TestCase
@@ -20,8 +20,8 @@ class ProjectGetIssueTypesCommandTest extends TestCase
 
     public function testCreateSuccess()
     {
-        $mock = \Mockery::mock(Project::class, [])->makePartial();
-        $this->instance(Project::class, $mock);
+        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $mock);
 
         $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),

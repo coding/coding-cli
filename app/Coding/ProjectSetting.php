@@ -2,7 +2,7 @@
 
 namespace App\Coding;
 
-class Project extends Base
+class ProjectSetting extends Base
 {
     public function getIssueTypes($token, $projectName)
     {

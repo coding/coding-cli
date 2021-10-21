@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Coding\Issue;
 use App\Coding\Iteration;
-use App\Coding\Project;
+use App\Coding\ProjectSetting;
 use Tests\TestCase;
 
 class IssueImportCommandTest extends TestCase
@@ -26,8 +26,8 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportSuccess()
     {
-        $mock = \Mockery::mock(Project::class, [])->makePartial();
-        $this->instance(Project::class, $mock);
+        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $mock);
 
         $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
@@ -66,8 +66,8 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportUserStorySuccess()
     {
-        $mock = \Mockery::mock(Project::class, [])->makePartial();
-        $this->instance(Project::class, $mock);
+        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $mock);
 
         $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
@@ -113,8 +113,8 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportSubTask()
     {
-        $mock = \Mockery::mock(Project::class, [])->makePartial();
-        $this->instance(Project::class, $mock);
+        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $mock);
 
         $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
@@ -179,8 +179,8 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportFailedIssueTypeNotExists()
     {
-        $mock = \Mockery::mock(Project::class, [])->makePartial();
-        $this->instance(Project::class, $mock);
+        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $mock);
         $mock->shouldReceive('getIssueTypes')->times(1)->andReturn([]);
 
         $this->artisan('issue:import', ['file' => $this->dataDir . 'coding/scrum-issues.csv'])

@@ -2,7 +2,7 @@
 
 namespace Tests\Unit;
 
-use App\Coding\Project;
+use App\Coding\ProjectSetting;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Response;
 use Tests\TestCase;
@@ -34,7 +34,7 @@ class CodingProjectTest extends TestCase
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
-        $coding = new Project($clientMock);
+        $coding = new ProjectSetting($clientMock);
         $result = $coding->getIssueTypes($codingToken, $codingProjectUri);
         $this->assertEquals(json_decode($responseBody, true)['Response']['IssueTypes'], $result);
     }
