@@ -70,7 +70,7 @@ class IssueImportCommand extends Command
         return 0;
     }
 
-    private function createIssueByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
+    private function getIssueTypes(Project $codingProject, $row): void
     {
         if (empty($this->issueTypes)) {
             $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
@@ -81,14 +81,37 @@ class IssueImportCommand extends Command
         if (!isset($this->issueTypes[$row['事项类型']])) {
             throw new Exception('「' . $row['事项类型'] . '」类型不存在，请在项目设置中添加');
         }
+    }
+
+    private function createIssueByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
+    {
+        $this->getIssueTypes($codingProject, $row);
         $data = [
             'Type' => $this->issueTypes[$row['事项类型']]['IssueType'],
             'IssueTypeId' => $this->issueTypes[$row['事项类型']]['Id'],
             'Name' => $row['标题'],
-            'Priority' => \App\Models\Issue::PRIORITY_MAP[$row['优先级']],
-            'IterationCode' => $row['所属迭代'] ? $this->getIterationCode($iteration, $row['所属迭代']) : null,
-            'ParentCode' => !empty($row['ParentCode']) ? $this->issueCodeMap[$row['ParentCode']] : null,
         ];
+        if (!empty($row['优先级'])) {
+            $data['Priority'] = \App\Models\Issue::PRIORITY_MAP[$row['优先级']];
+        }
+        if (!empty($row['所属迭代'])) {
+            $data['IterationCode'] = $this->getIterationCode($iteration, $row['所属迭代']);
+        }
+        if (!empty($row['ParentCode'])) {
+            $data['ParentCode'] = $this->issueCodeMap[$row['ParentCode']];
+        }
+        foreach (
+            [
+            'Description' => '描述',
+            'DueDate' => '截止日期',
+            'StartDate' => '开始日期',
+            'StoryPoint' => '故事点',
+            ] as $english => $chinese
+        ) {
+            if (!empty($row[$chinese])) {
+                $data[$english] = $row[$chinese];
+            }
+        }
         $result = $issue->create($this->codingToken, $this->codingProjectUri, $data);
         if (isset($row['ID'])) {
             $this->issueCodeMap[$row['ID']] = intval($result['Code']);

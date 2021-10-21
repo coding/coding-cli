@@ -99,7 +99,8 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '用户可通过手机号注册账户',
                 'Priority' => "1",
                 'IterationCode' => 2746,
-                'ParentCode' => null,
+                'DueDate' => '2021-10-21',
+                'StoryPoint' => '2',
             ]
         ])->andReturn($result);
 
@@ -136,9 +137,8 @@ class IssueImportCommandTest extends TestCase
                 'Type' => 'REQUIREMENT',
                 'IssueTypeId' => 213218,
                 'Name' => '用户可通过手机号注册账户',
-                'Priority' => "1",
-                'IterationCode' => null,
-                'ParentCode' => null,
+                'DueDate' => '2021-10-21',
+                'StoryPoint' => '2',
             ]
         ])->andReturn($parentIssue);
 
@@ -151,8 +151,7 @@ class IssueImportCommandTest extends TestCase
                 'Type' => 'SUB_TASK',
                 'IssueTypeId' => 213222,
                 'Name' => '完成手机号注册的短信验证码发送接口',
-                'Priority' => "1",
-                'IterationCode' => null,
+                'Priority' => "0",
                 'ParentCode' => 2742,
             ]
         ])->andReturn($subTask1);
@@ -167,7 +166,6 @@ class IssueImportCommandTest extends TestCase
                 'IssueTypeId' => 213222,
                 'Name' => '完成通过手机号注册用户的接口',
                 'Priority' => "1",
-                'IterationCode' => null,
                 'ParentCode' => 2742,
             ]
         ])->andReturn($subTask2);
