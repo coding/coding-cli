@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Coding\Issue;
-use App\Coding\Project;
+use App\Coding\ProjectSetting;
 use LaravelZero\Framework\Commands\Command;
 
 class ProjectGetIssueTypesCommand extends Command
@@ -32,11 +32,11 @@ class ProjectGetIssueTypesCommand extends Command
      * Execute the console command.
      *
      */
-    public function handle(Project $codingProject): int
+    public function handle(ProjectSetting $projectSetting): int
     {
         $this->setCodingApi();
 
-        $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
+        $result = $projectSetting->getIssueTypes($this->codingToken, $this->codingProjectUri);
 
         foreach ($result as $item) {
             $this->info($item['Id'] . ' ' . $item['Name']);

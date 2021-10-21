@@ -4,7 +4,7 @@ namespace App\Commands;
 
 use App\Coding\Issue;
 use App\Coding\Iteration;
-use App\Coding\Project;
+use App\Coding\ProjectSetting;
 use Exception;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
@@ -41,7 +41,7 @@ class IssueImportCommand extends Command
      * Execute the console command.
      *
      */
-    public function handle(Issue $codingIssue, Project $codingProject, Iteration $iteration): int
+    public function handle(Issue $codingIssue, ProjectSetting $projectSetting, Iteration $iteration): int
     {
         $this->setCodingApi();
 
@@ -57,7 +57,7 @@ class IssueImportCommand extends Command
         }
         foreach ($rows as $row) {
             try {
-                $issueResult = $this->createIssueByRow($codingProject, $codingIssue, $iteration, $row);
+                $issueResult = $this->createIssueByRow($projectSetting, $codingIssue, $iteration, $row);
             } catch (Exception $e) {
                 $this->error('Error: ' . $e->getMessage());
                 return 1;
@@ -70,10 +70,10 @@ class IssueImportCommand extends Command
         return 0;
     }
 
-    private function getIssueTypes(Project $codingProject, $row): void
+    private function getIssueTypes(ProjectSetting $projectSetting, array $row): void
     {
         if (empty($this->issueTypes)) {
-            $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
+            $result = $projectSetting->getIssueTypes($this->codingToken, $this->codingProjectUri);
             foreach ($result as $item) {
                 $this->issueTypes[$item['Name']] = $item;
             }
@@ -83,9 +83,9 @@ class IssueImportCommand extends Command
         }
     }
 
-    private function createIssueByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
+    private function createIssueByRow(ProjectSetting $projectSetting, Issue $issue, Iteration $iteration, array $row)
     {
-        $this->getIssueTypes($codingProject, $row);
+        $this->getIssueTypes($projectSetting, $row);
         $data = [
             'Type' => $this->issueTypes[$row['事项类型']]['IssueType'],
             'IssueTypeId' => $this->issueTypes[$row['事项类型']]['Id'],
