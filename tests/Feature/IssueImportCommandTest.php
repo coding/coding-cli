@@ -9,19 +9,19 @@ use Tests\TestCase;
 
 class IssueImportCommandTest extends TestCase
 {
-    private string $codingToken;
-    private string $codingTeamDomain;
-    private string $codingProjectUri;
+    private string $token;
+    private string $teamDomain;
+    private string $projectUri;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->codingToken = $this->faker->md5;
-        config(['coding.token' => $this->codingToken]);
-        $this->codingTeamDomain = $this->faker->domainWord;
-        config(['coding.team_domain' => $this->codingTeamDomain]);
-        $this->codingProjectUri = $this->faker->slug;
-        config(['coding.project_uri' => $this->codingProjectUri]);
+        $this->token = $this->faker->md5;
+        config(['coding.token' => $this->token]);
+        $this->teamDomain = $this->faker->domainWord;
+        config(['coding.team_domain' => $this->teamDomain]);
+        $this->projectUri = $this->faker->slug;
+        config(['coding.project_uri' => $this->projectUri]);
     }
 
     public function testImportSuccess()
@@ -56,11 +56,11 @@ class IssueImportCommandTest extends TestCase
         $issueMock->shouldReceive('create')->times(21)->andReturn(...$results);
 
         $this->artisan('issue:import', ['file' => $this->dataDir . 'coding/scrum-issues.csv'])
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/1")
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/2")
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/3")
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/20")
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/21")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/1")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/2")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/3")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/20")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/21")
             ->assertExitCode(0);
     }
 
@@ -91,20 +91,91 @@ class IssueImportCommandTest extends TestCase
         )['Response']['Iteration']);
 
         $issueMock->shouldReceive('create')->times(1)->withArgs([
-            $this->codingToken,
-            $this->codingProjectUri,
+            $this->token,
+            $this->projectUri,
             [
                 'Type' => 'REQUIREMENT',
                 'IssueTypeId' => 213218,
                 'Name' => '用户可通过手机号注册账户',
                 'Priority' => "1",
                 'IterationCode' => 2746,
+                'ParentCode' => null,
             ]
         ])->andReturn($result);
 
         $this->artisan('issue:import', ['file' => $this->dataDir . 'coding/scrum-issue-5.csv'])
-            ->expectsOutput("https://$this->codingTeamDomain.coding.net/p/$this->codingProjectUri/all/issues/" .
+            ->expectsOutput('标题：用户可通过手机号注册账户')
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/" .
                 $result['Code'])
+            ->assertExitCode(0);
+    }
+
+    public function testImportSubTask()
+    {
+        $mock = \Mockery::mock(Project::class, [])->makePartial();
+        $this->instance(Project::class, $mock);
+
+        $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
+            true
+        )['Response']['IssueTypes']);
+
+        $issueMock = \Mockery::mock(Issue::class, [])->makePartial();
+        $this->instance(Issue::class, $issueMock);
+
+        $response = json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'CreateIssueResponse.json'),
+            true
+        )['Response']['Issue'];
+
+        $parentIssue = $response;
+        $issueMock->shouldReceive('create')->times(1)->withArgs([
+            $this->token,
+            $this->projectUri,
+            [
+                'Type' => 'REQUIREMENT',
+                'IssueTypeId' => 213218,
+                'Name' => '用户可通过手机号注册账户',
+                'Priority' => "1",
+                'IterationCode' => null,
+                'ParentCode' => null,
+            ]
+        ])->andReturn($parentIssue);
+
+        $subTask1 = $response;
+        $subTask1['Code'] = $this->faker->randomNumber();
+        $issueMock->shouldReceive('create')->times(1)->withArgs([
+            $this->token,
+            $this->projectUri,
+            [
+                'Type' => 'SUB_TASK',
+                'IssueTypeId' => 213222,
+                'Name' => '完成手机号注册的短信验证码发送接口',
+                'Priority' => "1",
+                'IterationCode' => null,
+                'ParentCode' => 2742,
+            ]
+        ])->andReturn($subTask1);
+
+        $subTask2 = $response;
+        $subTask2['Code'] = $this->faker->randomNumber();
+        $issueMock->shouldReceive('create')->times(1)->withArgs([
+            $this->token,
+            $this->projectUri,
+            [
+                'Type' => 'SUB_TASK',
+                'IssueTypeId' => 213222,
+                'Name' => '完成通过手机号注册用户的接口',
+                'Priority' => "1",
+                'IterationCode' => null,
+                'ParentCode' => 2742,
+            ]
+        ])->andReturn($subTask2);
+
+        $this->artisan('issue:import', ['file' => $this->dataDir . 'coding/scrum-issues-5-6-7.csv'])
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/2742")
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/" . $subTask1['Code'])
+            ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/" . $subTask2['Code'])
             ->assertExitCode(0);
     }
 }
