@@ -178,4 +178,15 @@ class IssueImportCommandTest extends TestCase
             ->expectsOutput("https://$this->teamDomain.coding.net/p/$this->projectUri/all/issues/" . $subTask2['Code'])
             ->assertExitCode(0);
     }
+
+    public function testImportFailedIssueTypeNotExists()
+    {
+        $mock = \Mockery::mock(Project::class, [])->makePartial();
+        $this->instance(Project::class, $mock);
+        $mock->shouldReceive('getIssueTypes')->times(1)->andReturn([]);
+
+        $this->artisan('issue:import', ['file' => $this->dataDir . 'coding/scrum-issues.csv'])
+            ->expectsOutput('Error: 「史诗」类型不存在，请在项目设置中添加')
+            ->assertExitCode(1);
+    }
 }

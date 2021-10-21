@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Coding\Issue;
 use App\Coding\Iteration;
 use App\Coding\Project;
+use Exception;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
 
@@ -57,7 +58,7 @@ class IssueImportCommand extends Command
         foreach ($rows as $row) {
             try {
                 $issueResult = $this->createIssueByRow($codingProject, $codingIssue, $iteration, $row);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error('Error: ' . $e->getMessage());
                 return 1;
             }
@@ -76,6 +77,9 @@ class IssueImportCommand extends Command
             foreach ($result as $item) {
                 $this->issueTypes[$item['Name']] = $item;
             }
+        }
+        if (!isset($this->issueTypes[$row['事项类型']])) {
+            throw new Exception('「' . $row['事项类型'] . '」类型不存在，请在项目设置中添加');
         }
         $data = [
             'Type' => $this->issueTypes[$row['事项类型']]['IssueType'],
