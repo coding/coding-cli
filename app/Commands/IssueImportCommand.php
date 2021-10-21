@@ -34,6 +34,7 @@ class IssueImportCommand extends Command
 
     protected array $iterationMap = [];
     protected array $issueTypes = [];
+    protected array $issueCodeMap = [];
 
     /**
      * Execute the console command.
@@ -50,21 +51,25 @@ class IssueImportCommand extends Command
         }
 
         $rows = FastExcel::import($filePath);
+        if (!empty($rows) && isset($rows[0]['ID'])) {
+            $rows = $rows->sortBy('ID');
+        }
         foreach ($rows as $row) {
             try {
-                $iterationResult = $this->createByRow($codingProject, $codingIssue, $iteration, $row);
+                $issueResult = $this->createIssueByRow($codingProject, $codingIssue, $iteration, $row);
             } catch (\Exception $e) {
                 $this->error('Error: ' . $e->getMessage());
                 return 1;
             }
+            $this->info('标题：' . $row['标题']);
             $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}" .
-                "/all/issues/${iterationResult['Code']}");
+                "/all/issues/${issueResult['Code']}");
         }
 
         return 0;
     }
 
-    private function createByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
+    private function createIssueByRow(Project $codingProject, Issue $issue, Iteration $iteration, array $row)
     {
         if (empty($this->issueTypes)) {
             $result = $codingProject->getIssueTypes($this->codingToken, $this->codingProjectUri);
@@ -78,8 +83,13 @@ class IssueImportCommand extends Command
             'Name' => $row['标题'],
             'Priority' => \App\Models\Issue::PRIORITY_MAP[$row['优先级']],
             'IterationCode' => $row['所属迭代'] ? $this->getIterationCode($iteration, $row['所属迭代']) : null,
+            'ParentCode' => !empty($row['ParentCode']) ? $this->issueCodeMap[$row['ParentCode']] : null,
         ];
-        return $issue->create($this->codingToken, $this->codingProjectUri, $data);
+        $result = $issue->create($this->codingToken, $this->codingProjectUri, $data);
+        if (isset($row['ID'])) {
+            $this->issueCodeMap[$row['ID']] = intval($result['Code']);
+        }
+        return $result;
     }
 
     private function getIterationCode(Iteration $iteration, string $name)
