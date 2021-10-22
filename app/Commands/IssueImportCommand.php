@@ -6,6 +6,7 @@ use App\Coding\Issue;
 use App\Coding\Iteration;
 use App\Coding\ProjectSetting;
 use Exception;
+use Illuminate\Support\Arr;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
 
@@ -33,9 +34,10 @@ class IssueImportCommand extends Command
      */
     protected $description = '导入事项';
 
-    protected array $iterationMap = [];
-    protected array $issueTypes = [];
     protected array $issueCodeMap = [];
+    protected array $issueTypes = [];
+    protected array $issueTypeStatus = [];
+    protected array $iterationMap = [];
 
     /**
      * Execute the console command.
@@ -83,6 +85,18 @@ class IssueImportCommand extends Command
         }
     }
 
+    private function getStatusId(ProjectSetting $projectSetting, string $issueType, string $statusChinese): int
+    {
+        if (!isset($this->issueTypeStatus[$issueType])) {
+            $result = $projectSetting->getIssueTypeStatus($this->codingToken, $this->codingProjectUri, $issueType);
+            foreach ($result as $item) {
+                $tmp = $item['IssueStatus'];
+                $this->issueTypeStatus[$issueType][$tmp['Name']] = $tmp['Id'];
+            }
+        }
+        return intval($this->issueTypeStatus[$issueType][$statusChinese]);
+    }
+
     private function createIssueByRow(ProjectSetting $projectSetting, Issue $issue, Iteration $iteration, array $row)
     {
         $this->getIssueTypes($projectSetting, $row);
@@ -111,6 +125,9 @@ class IssueImportCommand extends Command
             if (!empty($row[$chinese])) {
                 $data[$english] = $row[$chinese];
             }
+        }
+        if (!empty($row['状态'])) {
+            $data['StatusId'] = $this->getStatusId($projectSetting, $data['Type'], $row['状态']);
         }
         $result = $issue->create($this->codingToken, $this->codingProjectUri, $data);
         if (isset($row['ID'])) {

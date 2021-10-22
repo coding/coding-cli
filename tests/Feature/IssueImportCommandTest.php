@@ -26,13 +26,33 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportSuccess()
     {
-        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
-        $this->instance(ProjectSetting::class, $mock);
+        $projectSettingMock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $projectSettingMock);
 
-        $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
+        $projectSettingMock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
             true
         )['Response']['IssueTypes']);
+        $requirementStatus = json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
+            true
+        )['Response']['ProjectIssueStatusList'];
+        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(5)->andReturn(
+            $requirementStatus,
+            $requirementStatus,
+            [
+                ['IssueStatus' => ['Id' => 11, 'Name' => '已完成']],
+                ['IssueStatus' => ['Id' => 12, 'Name' => '处理中']],
+            ],
+            [
+                ['IssueStatus' => ['Id' => 11, 'Name' => '未开始']],
+                ['IssueStatus' => ['Id' => 12, 'Name' => '处理中']],
+            ],
+            [
+                ['IssueStatus' => ['Id' => 22, 'Name' => '处理中']],
+                ['IssueStatus' => ['Id' => 23, 'Name' => '待处理']],
+            ]
+        );
 
         $issueMock = \Mockery::mock(Issue::class, [])->makePartial();
         $this->instance(Issue::class, $issueMock);
@@ -66,13 +86,17 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportUserStorySuccess()
     {
-        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
-        $this->instance(ProjectSetting::class, $mock);
+        $projectSettingMock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $projectSettingMock);
 
-        $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
+        $projectSettingMock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
             true
         )['Response']['IssueTypes']);
+        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(1)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
+            true
+        )['Response']['ProjectIssueStatusList']);
 
         $issueMock = \Mockery::mock(Issue::class, [])->makePartial();
         $this->instance(Issue::class, $issueMock);
@@ -101,6 +125,7 @@ class IssueImportCommandTest extends TestCase
                 'IterationCode' => 2746,
                 'DueDate' => '2021-10-21',
                 'StoryPoint' => '2',
+                'StatusId' => 9,
             ]
         ])->andReturn($result);
 
@@ -113,13 +138,17 @@ class IssueImportCommandTest extends TestCase
 
     public function testImportSubTask()
     {
-        $mock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
-        $this->instance(ProjectSetting::class, $mock);
+        $projectSettingMock = \Mockery::mock(ProjectSetting::class, [])->makePartial();
+        $this->instance(ProjectSetting::class, $projectSettingMock);
 
-        $mock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
+        $projectSettingMock->shouldReceive('getIssueTypes')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
             true
         )['Response']['IssueTypes']);
+        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(2)->andReturn(json_decode(
+            file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
+            true
+        )['Response']['ProjectIssueStatusList']);
 
         $issueMock = \Mockery::mock(Issue::class, [])->makePartial();
         $this->instance(Issue::class, $issueMock);
@@ -139,6 +168,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '用户可通过手机号注册账户',
                 'DueDate' => '2021-10-21',
                 'StoryPoint' => '2',
+                'StatusId' => 9,
             ]
         ])->andReturn($parentIssue);
 
@@ -153,6 +183,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '完成手机号注册的短信验证码发送接口',
                 'Priority' => "0",
                 'ParentCode' => 2742,
+                'StatusId' => 13,
             ]
         ])->andReturn($subTask1);
 
@@ -167,6 +198,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '完成通过手机号注册用户的接口',
                 'Priority' => "1",
                 'ParentCode' => 2742,
+                'StatusId' => 13,
             ]
         ])->andReturn($subTask2);
 
