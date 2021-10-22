@@ -40,14 +40,8 @@ class IssueImportCommandTest extends TestCase
         $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(5)->andReturn(
             $requirementStatus,
             $requirementStatus,
-            [
-                ['IssueStatus' => ['Id' => 11, 'Name' => '已完成']],
-                ['IssueStatus' => ['Id' => 12, 'Name' => '处理中']],
-            ],
-            [
-                ['IssueStatus' => ['Id' => 11, 'Name' => '未开始']],
-                ['IssueStatus' => ['Id' => 12, 'Name' => '处理中']],
-            ],
+            $requirementStatus,
+            $requirementStatus,
             [
                 ['IssueStatus' => ['Id' => 22, 'Name' => '处理中']],
                 ['IssueStatus' => ['Id' => 23, 'Name' => '待处理']],
@@ -125,7 +119,7 @@ class IssueImportCommandTest extends TestCase
                 'IterationCode' => 2746,
                 'DueDate' => '2021-10-21',
                 'StoryPoint' => '2',
-                'StatusId' => 9,
+                'StatusId' => 1227037,
             ]
         ])->andReturn($result);
 
@@ -168,7 +162,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '用户可通过手机号注册账户',
                 'DueDate' => '2021-10-21',
                 'StoryPoint' => '2',
-                'StatusId' => 9,
+                'StatusId' => 1227037,
             ]
         ])->andReturn($parentIssue);
 
@@ -183,7 +177,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '完成手机号注册的短信验证码发送接口',
                 'Priority' => "0",
                 'ParentCode' => 2742,
-                'StatusId' => 13,
+                'StatusId' => 1227058,
             ]
         ])->andReturn($subTask1);
 
@@ -198,7 +192,7 @@ class IssueImportCommandTest extends TestCase
                 'Name' => '完成通过手机号注册用户的接口',
                 'Priority' => "1",
                 'ParentCode' => 2742,
-                'StatusId' => 13,
+                'StatusId' => 1227058,
             ]
         ])->andReturn($subTask2);
 

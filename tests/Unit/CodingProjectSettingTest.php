@@ -46,6 +46,7 @@ class CodingProjectSettingTest extends TestCase
         $codingProjectUri = $this->faker->slug;
 
         $issueType = $this->faker->randomElement(['DEFECT', 'REQUIREMENT', 'MISSION', 'EPIC', 'SUB_TASK']);
+        $issueTypeId = $this->faker->randomNumber();
         $clientMock = $this->getMockBuilder(Client::class)->getMock();
         $clientMock->expects($this->once())
             ->method('request')
@@ -62,12 +63,13 @@ class CodingProjectSettingTest extends TestCase
                         'Action' => 'DescribeProjectIssueStatusList',
                         'ProjectName' => $codingProjectUri,
                         'IssueType' => $issueType,
+                        'IssueTypeId' => $issueTypeId,
                     ])
                 ]
             )
             ->willReturn(new Response(200, [], $responseBody));
         $coding = new ProjectSetting($clientMock);
-        $result = $coding->getIssueTypeStatus($codingToken, $codingProjectUri, $issueType);
+        $result = $coding->getIssueTypeStatus($codingToken, $codingProjectUri, $issueType, $issueTypeId);
         $this->assertEquals(json_decode($responseBody, true)['Response']['ProjectIssueStatusList'], $result);
     }
 }

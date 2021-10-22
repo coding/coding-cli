@@ -2,7 +2,6 @@
 
 namespace App\Commands;
 
-use App\Coding\Issue;
 use App\Coding\ProjectSetting;
 use LaravelZero\Framework\Commands\Command;
 

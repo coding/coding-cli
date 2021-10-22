@@ -85,16 +85,21 @@ class IssueImportCommand extends Command
         }
     }
 
-    private function getStatusId(ProjectSetting $projectSetting, string $issueType, string $statusChinese): int
+    private function getStatusId(ProjectSetting $projectSetting, string $issueTypeName, string $statusName): int
     {
-        if (!isset($this->issueTypeStatus[$issueType])) {
-            $result = $projectSetting->getIssueTypeStatus($this->codingToken, $this->codingProjectUri, $issueType);
+        if (!isset($this->issueTypeStatus[$issueTypeName])) {
+            $type = $this->issueTypes[$issueTypeName]['IssueType'];
+            $typeId = $this->issueTypes[$issueTypeName]['Id'];
+            $result = $projectSetting->getIssueTypeStatus($this->codingToken, $this->codingProjectUri, $type, $typeId);
             foreach ($result as $item) {
                 $tmp = $item['IssueStatus'];
-                $this->issueTypeStatus[$issueType][$tmp['Name']] = $tmp['Id'];
+                $this->issueTypeStatus[$issueTypeName][$tmp['Name']] = $tmp['Id'];
             }
         }
-        return intval($this->issueTypeStatus[$issueType][$statusChinese]);
+        if (!isset($this->issueTypeStatus[$issueTypeName][$statusName])) {
+            throw new Exception('「' . $statusName . '」不存在，请在设置中添加');
+        }
+        return intval($this->issueTypeStatus[$issueTypeName][$statusName]);
     }
 
     private function createIssueByRow(ProjectSetting $projectSetting, Issue $issue, Iteration $iteration, array $row)
@@ -127,7 +132,7 @@ class IssueImportCommand extends Command
             }
         }
         if (!empty($row['状态'])) {
-            $data['StatusId'] = $this->getStatusId($projectSetting, $data['Type'], $row['状态']);
+            $data['StatusId'] = $this->getStatusId($projectSetting, $row['事项类型'], $row['状态']);
         }
         $result = $issue->create($this->codingToken, $this->codingProjectUri, $data);
         if (isset($row['ID'])) {
