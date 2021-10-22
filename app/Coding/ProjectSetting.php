@@ -21,7 +21,7 @@ class ProjectSetting extends Base
         return $result['Response']['IssueTypes'];
     }
 
-    public function getIssueTypeStatus(string $token, string $projectName, string $issueType)
+    public function getIssueTypeStatus(string $token, string $projectName, string $issueType, int $issueTypeId)
     {
         $response = $this->client->request('POST', 'https://e.coding.net/open-api', [
             'headers' => [
@@ -33,6 +33,7 @@ class ProjectSetting extends Base
                 'Action' => 'DescribeProjectIssueStatusList',
                 'ProjectName' => $projectName,
                 'IssueType' => $issueType,
+                'IssueTypeId' => $issueTypeId,
             ],
         ]);
         $result = json_decode($response->getBody(), true);
