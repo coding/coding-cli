@@ -2,8 +2,9 @@
 
 namespace App\Commands;
 
-use App\Coding\Iteration;
+use App\Coding\Iteration as LocalIteration;
 use Carbon\Carbon;
+use Coding\Iteration;
 use LaravelZero\Framework\Commands\Command;
 
 class IterationCreateCommand extends Command
@@ -40,8 +41,11 @@ class IterationCreateCommand extends Command
     public function handle(Iteration $iteration): int
     {
         $this->setCodingApi();
+        $iteration->setToken($this->codingToken);
 
-        $data = [];
+        $data = [
+            'ProjectName' => $this->codingProjectUri,
+        ];
         $startAt = Carbon::parse($this->option('start_at') ?? $this->ask('开始时间：', Carbon::today()->toDateString()));
         $data['StartAt'] = $startAt->toDateString();
         $endAt = Carbon::parse($this->option('end_at') ?? $this->ask(
@@ -49,11 +53,11 @@ class IterationCreateCommand extends Command
             Carbon::today()->addDays(14)->toDateString()
         ));
         $data['EndAt'] = $endAt->toDateString();
-        $data['Name'] = $this->option('name') ?? $this->ask('标题：', Iteration::generateName($startAt, $endAt));
+        $data['Name'] = $this->option('name') ?? $this->ask('标题：', LocalIteration::generateName($startAt, $endAt));
         $data['Goal'] = $this->option('goal');
         $data['Assignee'] = $this->option('assignee');
 
-        $result = $iteration->create($this->codingToken, $this->codingProjectUri, $data);
+        $result = $iteration->create($data);
 
         $this->info('创建成功');
         $this->info("https://{$this->codingTeamDomain}.coding.net/p/{$this->codingProjectUri}" .
