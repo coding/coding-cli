@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Coding\Iteration;
 use Carbon\Carbon;
+use Coding\Iteration;
 use Tests\TestCase;
 
 class IterationCreateCommandTest extends TestCase
