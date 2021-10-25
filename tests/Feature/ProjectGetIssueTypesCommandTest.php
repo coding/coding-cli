@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Coding\ProjectSetting;
+use Coding\ProjectSetting;
 use Tests\TestCase;
 
 class ProjectGetIssueTypesCommandTest extends TestCase

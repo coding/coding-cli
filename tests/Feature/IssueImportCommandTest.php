@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Coding\Issue;
 use Coding\Iteration;
-use App\Coding\ProjectSetting;
+use Coding\ProjectSetting;
 use Tests\TestCase;
 
 class IssueImportCommandTest extends TestCase
@@ -37,7 +37,7 @@ class IssueImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
             true
         )['Response']['ProjectIssueStatusList'];
-        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(5)->andReturn(
+        $projectSettingMock->shouldReceive('getIssueStatus')->times(5)->andReturn(
             $requirementStatus,
             $requirementStatus,
             $requirementStatus,
@@ -87,7 +87,7 @@ class IssueImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
             true
         )['Response']['IssueTypes']);
-        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(1)->andReturn(json_decode(
+        $projectSettingMock->shouldReceive('getIssueStatus')->times(1)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
             true
         )['Response']['ProjectIssueStatusList']);
@@ -138,7 +138,7 @@ class IssueImportCommandTest extends TestCase
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueTypeListResponse.json'),
             true
         )['Response']['IssueTypes']);
-        $projectSettingMock->shouldReceive('getIssueTypeStatus')->times(2)->andReturn(json_decode(
+        $projectSettingMock->shouldReceive('getIssueStatus')->times(2)->andReturn(json_decode(
             file_get_contents($this->dataDir . 'coding/' . 'DescribeProjectIssueStatusListResponse.json'),
             true
         )['Response']['ProjectIssueStatusList']);
