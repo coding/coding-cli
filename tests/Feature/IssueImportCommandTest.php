@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Coding\Issue;
-use App\Coding\Iteration;
+use Coding\Issue;
+use Coding\Iteration;
 use App\Coding\ProjectSetting;
 use Tests\TestCase;
 
@@ -109,9 +109,8 @@ class IssueImportCommandTest extends TestCase
         )['Response']['Iteration']);
 
         $issueMock->shouldReceive('create')->times(1)->withArgs([
-            $this->token,
-            $this->projectUri,
             [
+                'ProjectName' => $this->projectUri,
                 'Type' => 'REQUIREMENT',
                 'IssueTypeId' => 213218,
                 'Name' => '用户可通过手机号注册账户',
@@ -154,9 +153,8 @@ class IssueImportCommandTest extends TestCase
 
         $parentIssue = $response;
         $issueMock->shouldReceive('create')->times(1)->withArgs([
-            $this->token,
-            $this->projectUri,
             [
+                'ProjectName' => $this->projectUri,
                 'Type' => 'REQUIREMENT',
                 'IssueTypeId' => 213218,
                 'Name' => '用户可通过手机号注册账户',
@@ -169,9 +167,8 @@ class IssueImportCommandTest extends TestCase
         $subTask1 = $response;
         $subTask1['Code'] = $this->faker->randomNumber();
         $issueMock->shouldReceive('create')->times(1)->withArgs([
-            $this->token,
-            $this->projectUri,
             [
+                'ProjectName' => $this->projectUri,
                 'Type' => 'SUB_TASK',
                 'IssueTypeId' => 213222,
                 'Name' => '完成手机号注册的短信验证码发送接口',
@@ -184,9 +181,8 @@ class IssueImportCommandTest extends TestCase
         $subTask2 = $response;
         $subTask2['Code'] = $this->faker->randomNumber();
         $issueMock->shouldReceive('create')->times(1)->withArgs([
-            $this->token,
-            $this->projectUri,
             [
+                'ProjectName' => $this->projectUri,
                 'Type' => 'SUB_TASK',
                 'IssueTypeId' => 213222,
                 'Name' => '完成通过手机号注册用户的接口',

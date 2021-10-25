@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Coding\Issue;
+use Coding\Issue;
 use Tests\TestCase;
 
 class IssueCreateCommandTest extends TestCase
