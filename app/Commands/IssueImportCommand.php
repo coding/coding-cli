@@ -4,7 +4,7 @@ namespace App\Commands;
 
 use Coding\Issue;
 use Coding\Iteration;
-use App\Coding\ProjectSetting;
+use Coding\ProjectSetting;
 use Exception;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
@@ -46,6 +46,7 @@ class IssueImportCommand extends Command
         $this->setCodingApi();
         $codingIssue->setToken($this->codingToken);
         $iteration->setToken($this->codingToken);
+        $projectSetting->setToken($this->codingToken);
 
         $filePath = $this->argument('file');
         if (!file_exists($filePath)) {
@@ -75,7 +76,7 @@ class IssueImportCommand extends Command
     private function getIssueTypes(ProjectSetting $projectSetting, array $row): void
     {
         if (empty($this->issueTypes)) {
-            $result = $projectSetting->getIssueTypes($this->codingToken, $this->codingProjectUri);
+            $result = $projectSetting->getIssueTypes(['ProjectName' => $this->codingProjectUri]);
             foreach ($result as $item) {
                 $this->issueTypes[$item['Name']] = $item;
             }
@@ -90,7 +91,11 @@ class IssueImportCommand extends Command
         if (!isset($this->issueTypeStatus[$issueTypeName])) {
             $type = $this->issueTypes[$issueTypeName]['IssueType'];
             $typeId = $this->issueTypes[$issueTypeName]['Id'];
-            $result = $projectSetting->getIssueTypeStatus($this->codingToken, $this->codingProjectUri, $type, $typeId);
+            $result = $projectSetting->getIssueStatus([
+                'ProjectName' => $this->codingProjectUri,
+                'IssueType' => $type,
+                'IssueTypeId' => $typeId
+            ]);
             foreach ($result as $item) {
                 $tmp = $item['IssueStatus'];
                 $this->issueTypeStatus[$issueTypeName][$tmp['Name']] = $tmp['Id'];

@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Coding\ProjectSetting;
+use Coding\ProjectSetting;
 use LaravelZero\Framework\Commands\Command;
 
 class ProjectGetIssueTypesCommand extends Command
@@ -34,8 +34,9 @@ class ProjectGetIssueTypesCommand extends Command
     public function handle(ProjectSetting $projectSetting): int
     {
         $this->setCodingApi();
+        $projectSetting->setToken($this->codingToken);
 
-        $result = $projectSetting->getIssueTypes($this->codingToken, $this->codingProjectUri);
+        $result = $projectSetting->getIssueTypes(['ProjectName' => $this->codingProjectUri]);
 
         foreach ($result as $item) {
             $this->info($item['Id'] . ' ' . $item['Name']);
