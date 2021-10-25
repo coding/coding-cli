@@ -2,11 +2,10 @@
 
 namespace App\Commands;
 
-use App\Coding\Issue;
-use App\Coding\Iteration;
+use Coding\Issue;
+use Coding\Iteration;
 use App\Coding\ProjectSetting;
 use Exception;
-use Illuminate\Support\Arr;
 use LaravelZero\Framework\Commands\Command;
 use Rap2hpoutre\FastExcel\Facades\FastExcel;
 
@@ -45,6 +44,8 @@ class IssueImportCommand extends Command
     public function handle(Issue $codingIssue, ProjectSetting $projectSetting, Iteration $iteration): int
     {
         $this->setCodingApi();
+        $codingIssue->setToken($this->codingToken);
+        $iteration->setToken($this->codingToken);
 
         $filePath = $this->argument('file');
         if (!file_exists($filePath)) {
@@ -105,6 +106,7 @@ class IssueImportCommand extends Command
     {
         $this->getIssueTypes($projectSetting, $row);
         $data = [
+            'ProjectName' => $this->codingProjectUri,
             'Type' => $this->issueTypes[$row['事项类型']]['IssueType'],
             'IssueTypeId' => $this->issueTypes[$row['事项类型']]['Id'],
             'Name' => $row['标题'],
@@ -133,7 +135,7 @@ class IssueImportCommand extends Command
         if (!empty($row['状态'])) {
             $data['StatusId'] = $this->getStatusId($projectSetting, $row['事项类型'], $row['状态']);
         }
-        $result = $issue->create($this->codingToken, $this->codingProjectUri, $data);
+        $result = $issue->create($data);
         if (isset($row['ID'])) {
             $this->issueCodeMap[$row['ID']] = intval($result['Code']);
         }
@@ -143,7 +145,10 @@ class IssueImportCommand extends Command
     private function getIterationCode(Iteration $iteration, string $name)
     {
         if (!isset($this->iterationMap[$name])) {
-            $result = $iteration->create($this->codingToken, $this->codingProjectUri, ['name' => $name]);
+            $result = $iteration->create([
+                'ProjectName' => $this->codingProjectUri,
+                'Name' => $name,
+            ]);
             $this->iterationMap[$name] = $result['Code'];
         }
         return $this->iterationMap[$name];

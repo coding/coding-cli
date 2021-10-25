@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "7bd97de09ac0e5981d59996e4f1ddb21",
+    "content-hash": "1fbbc80274b42f3e2ef3f4dd2840f643",
     "packages": [
         {
             "name": "box/spout",
@@ -142,16 +142,16 @@
         },
         {
             "name": "coding/sdk",
-            "version": "0.1.2",
+            "version": "0.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Coding/coding-sdk-php.git",
-                "reference": "b3885378414a1906b179fe656ae4f0831bb23068"
+                "reference": "17575f7ca9a6475f32bd9ce0ef13f58f0045079b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Coding/coding-sdk-php/zipball/b3885378414a1906b179fe656ae4f0831bb23068",
-                "reference": "b3885378414a1906b179fe656ae4f0831bb23068",
+                "url": "https://api.github.com/repos/Coding/coding-sdk-php/zipball/17575f7ca9a6475f32bd9ce0ef13f58f0045079b",
+                "reference": "17575f7ca9a6475f32bd9ce0ef13f58f0045079b",
                 "shasum": ""
             },
             "require": {
@@ -180,9 +180,9 @@
             "description": "CODING.net SDK for PHP",
             "support": {
                 "issues": "https://github.com/Coding/coding-sdk-php/issues",
-                "source": "https://github.com/Coding/coding-sdk-php/tree/0.1.2"
+                "source": "https://github.com/Coding/coding-sdk-php/tree/0.2.0"
             },
-            "time": "2021-10-24T05:56:17+00:00"
+            "time": "2021-10-25T07:58:15+00:00"
         },
         {
             "name": "doctrine/inflector",

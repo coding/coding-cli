@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use App\Coding\Issue;
+use Coding\Issue;
 use LaravelZero\Framework\Commands\Command;
 
 class IssueCreateCommand extends Command
@@ -37,8 +37,11 @@ class IssueCreateCommand extends Command
     public function handle(Issue $codingIssue): int
     {
         $this->setCodingApi();
+        $codingIssue->setToken($this->codingToken);
 
-        $data = [];
+        $data = [
+            'ProjectName' => $this->codingProjectUri,
+        ];
         $data['Type'] = $this->option('type') ?? $this->choice(
             '类型：',
             ['DEFECT', 'REQUIREMENT', 'MISSION', 'EPIC', 'SUB_TASK'],
@@ -52,7 +55,7 @@ class IssueCreateCommand extends Command
         );
 
         try {
-            $result = $codingIssue->create($this->codingToken, $this->codingProjectUri, $data);
+            $result = $codingIssue->create($data);
         } catch (\Exception $e) {
             $this->error('Error: ' . $e->getMessage());
             return 1;
